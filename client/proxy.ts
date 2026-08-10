@@ -1,17 +1,15 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/login(.*)",
-  "/terms(.*)",
-  "/contact(.*)",
-  "/privacy(.*)",
-  "/sso-callback(.*)",
-  "/features(.*)",
-]);
+// Protected route prefixes requiring Clerk authentication
+const protectedPrefixes = ["/tasks", "/projects", "/settings"];
 
 const handler = clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
+  const { pathname } = req.nextUrl;
+  const isProtected = protectedPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  if (isProtected) {
     await auth.protect();
   }
 });
