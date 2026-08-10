@@ -4,14 +4,21 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useClerk } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "./GoogleIcon";
+import { authApi } from "@/features/auth/api/auth.api";
 
 export default function TaskoraLogin() {
   const router = useRouter();
-  const clerk = useClerk();
+  const { isLoaded, signIn } = useSignIn() as unknown as {
+    isLoaded: boolean;
+    signIn: {
+      sso?: (params: Record<string, string>) => Promise<void>;
+      authenticateWithRedirect: (params: Record<string, string>) => Promise<void>;
+    };
+  };
 
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -22,32 +29,18 @@ export default function TaskoraLogin() {
     setError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
-      const response = await fetch(`${apiUrl}/auth/guest`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        router.replace("/tasks");
-      } else {
-        const data = await response.json().catch(() => null);
-        console.error("Guest login failed:", data);
-        setError("Unable to start a guest session. Please try again.");
-        setIsGuestLoading(false);
-      }
+      await authApi.guestLogin();
+      router.replace("/tasks");
+      router.refresh();
     } catch (err) {
-      console.error("Guest login network error:", err);
+      console.error("Guest login error:", err);
       setError("Unable to start a guest session. Please try again.");
       setIsGuestLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    if (!clerk || !clerk.client) {
+    if (!isLoaded || !signIn) {
       setError("Authentication system is initializing. Please try again in a moment.");
       return;
     }
@@ -56,11 +49,19 @@ export default function TaskoraLogin() {
     setError(null);
 
     try {
-      await clerk.client.signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/tasks",
-      });
+      if (typeof signIn.sso === "function") {
+        await signIn.sso({
+          strategy: "oauth_google",
+          redirectCallbackUrl: "/sso-callback",
+          redirectUrl: "/tasks",
+        });
+      } else {
+        await signIn.authenticateWithRedirect({
+          strategy: "oauth_google",
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/tasks",
+        });
+      }
     } catch (err) {
       console.error("Clerk Google login error:", err);
       setError("Unable to continue with Google. Please try again.");

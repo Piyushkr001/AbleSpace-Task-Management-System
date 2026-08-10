@@ -3,11 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  GithubLogo,
-  TwitterLogo,
   LinkedinLogo,
-  DiscordLogo,
-  YoutubeLogo,
   XLogo,
   FacebookLogoIcon,
   InstagramLogoIcon,
@@ -102,7 +98,7 @@ function Footer() {
               </h3>
               <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
                 <li>
-                  <Link href="#features" className="hover:text-foreground transition-colors">
+                  <Link href="/features" className="hover:text-foreground transition-colors">
                     Features
                   </Link>
                 </li>
@@ -140,12 +136,12 @@ function Footer() {
               </h3>
               <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
                 <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/privacy" className="hover:text-foreground transition-colors">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-foreground transition-colors">
+                  <Link href="/terms" className="hover:text-foreground transition-colors">
                     Terms of Service
                   </Link>
                 </li>
@@ -157,7 +153,6 @@ function Footer() {
         {/* Bottom copyright */}
         <div className="mt-12 border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4">
           <p>© {currentYear} Taskora. All rights reserved.</p>
-          <p className="text-[11px]">Designed for AbleSpace Full Stack Developer Technical Assessment.</p>
         </div>
       </div>
     </footer>
