@@ -9,7 +9,7 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 import { AuthService } from "./auth.service";
-import { GuestAuthGuard } from "./guards/guest-auth.guard";
+import { UnifiedAuthGuard } from "./guards/unified-auth.guard";
 import {
   CurrentUser,
   CurrentUserData,
@@ -26,7 +26,7 @@ export class AuthController {
   }
 
   @Get("me")
-  @UseGuards(GuestAuthGuard)
+  @UseGuards(UnifiedAuthGuard)
   async getCurrentUser(@CurrentUser() user: CurrentUserData) {
     return this.authService.getCurrentUser(user.id);
   }

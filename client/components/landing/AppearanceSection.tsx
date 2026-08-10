@@ -1,7 +1,6 @@
 "use client";
 
 import { Laptop, Moon, Sun, Check } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 const themeOptions = [
   { name: "Light", icon: Sun, active: true },

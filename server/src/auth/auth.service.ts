@@ -3,41 +3,29 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
 import { UsersService } from "../users/users.service";
-import { WorkspacesService } from "../workspaces/workspaces.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly workspacesService: WorkspacesService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService
   ) {}
 
   async createGuestSession(res: Response) {
-    // 1. Create Guest User
-    const user = await this.usersService.createGuestUser();
+    // 1. Transactionally create Guest User, Workspace, and WorkspaceMember OWNER
+    const user = await this.usersService.createGuestUserTx();
 
-    // 2. Create Workspace with User as OWNER
-    await this.workspacesService.createWorkspaceForUser(
-      user.id,
-      "Guest Workspace"
-    );
-
-    // 3. Generate JWT payload
+    // 2. Generate minimal JWT payload identifying the principal
     const payload = {
-      id: user.id,
-      fullName: user.fullName,
-      isGuest: user.isGuest,
+      sub: user.id,
+      type: "guest",
     };
 
     const token = await this.jwtService.signAsync(payload);
 
-    // 4. Set HttpOnly Cookie
-    const cookieName = this.configService.get<string>(
-      "COOKIE_NAME",
-      "taskora_guest_session"
-    );
+    // 3. Set HttpOnly Cookie
+    const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
     const isProd =
       this.configService.get<string>("NODE_ENV") === "production";
 
@@ -53,8 +41,10 @@ export class AuthService {
       data: {
         user: {
           id: user.id,
-          fullName: user.fullName,
-          isGuest: user.isGuest,
+          fullName: user.fullName || "Guest",
+          email: null,
+          avatarUrl: null,
+          isGuest: true,
         },
       },
     };
@@ -70,9 +60,9 @@ export class AuthService {
       data: {
         user: {
           id: user.id,
-          fullName: user.fullName,
-          email: user.email,
-          avatarUrl: user.avatarUrl,
+          fullName: user.fullName ?? null,
+          email: user.email ?? null,
+          avatarUrl: user.avatarUrl ?? null,
           isGuest: user.isGuest,
         },
       },
@@ -80,10 +70,7 @@ export class AuthService {
   }
 
   clearSession(res: Response) {
-    const cookieName = this.configService.get<string>(
-      "COOKIE_NAME",
-      "taskora_guest_session"
-    );
+    const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
     const isProd =
       this.configService.get<string>("NODE_ENV") === "production";
 

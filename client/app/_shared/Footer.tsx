@@ -2,35 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  LinkedinLogo,
-  XLogo,
-  FacebookLogoIcon,
-  InstagramLogoIcon,
-} from "@phosphor-icons/react";
-
-const socialLinks = [
-  {
-    name: "X",
-    href: "https://twitter.com",
-    icon: XLogo,
-  },
-  {
-    name: "LinkedIn",
-    href: "https://linkedin.com",
-    icon: LinkedinLogo,
-  },
-  {
-    name: "Facebook",
-    href: "https://facebook.com",
-    icon: FacebookLogoIcon,
-  },
-  {
-    name: "Instagram",
-    href: "https://instagram.com",
-    icon: InstagramLogoIcon,
-  },
-];
 
 function Footer() {
   const currentYear = new Date().getFullYear();
@@ -46,7 +17,6 @@ function Footer() {
               aria-label="Taskora home"
               className="inline-flex items-center"
             >
-              {/* Existing Logo Paths preserved */}
               <Image
                 src="/Images/Logo/logo_light.svg"
                 alt="Taskora"
@@ -68,25 +38,6 @@ function Footer() {
             <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
               Focused task and project management for modern teams. Organize work, align priorities, and ship faster.
             </p>
-
-            {/* Social Links */}
-            <div className="pt-1 flex items-center gap-3 text-muted-foreground">
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Taskora on ${social.name}`}
-                    className="flex size-8 items-center justify-center rounded-lg border border-border/60 bg-muted/40 hover:bg-accent hover:text-foreground hover:border-border transition-colors"
-                  >
-                    <Icon size={18} weight="regular" />
-                  </a>
-                );
-              })}
-            </div>
           </div>
 
           {/* Links Columns */}

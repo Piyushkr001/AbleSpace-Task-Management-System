@@ -3,6 +3,7 @@
 import React, { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ClerkUserSync } from "@/components/auth/ClerkUserSync";
 
 interface ProviderProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface ProviderProps {
 function Provider({ children }: ProviderProps) {
   return (
     <ClerkProvider>
+      <ClerkUserSync />
       <ThemeProvider
         attribute="class"
         defaultTheme="system"

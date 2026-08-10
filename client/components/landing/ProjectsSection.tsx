@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderKanban, Users } from "lucide-react";
+import { FolderKanban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const projects = [

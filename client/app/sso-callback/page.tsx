@@ -12,6 +12,7 @@ export default function SSOCallbackPage() {
           Completing sign in...
         </p>
       </div>
+      <div id="clerk-captcha" />
       <AuthenticateWithRedirectCallback
         signUpForceRedirectUrl="/tasks"
         signInForceRedirectUrl="/tasks"

@@ -5,5 +5,5 @@ if (!apiUrl) {
 }
 
 export const env = {
-  API_URL: apiUrl,
+  API_URL: apiUrl.replace(/\/$/, ""),
 };

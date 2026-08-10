@@ -22,9 +22,10 @@ export const authApi = {
       method: "POST",
     }),
 
-  getCurrentUser: () =>
+  getCurrentUser: (token?: string) =>
     apiClient<UserResponse>("/auth/me", {
       method: "GET",
+      token,
     }),
 
   logout: () =>

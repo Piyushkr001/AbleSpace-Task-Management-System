@@ -16,26 +16,28 @@ export class GuestAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const cookieName = this.configService.get<string>(
-      "COOKIE_NAME",
-      "taskora_guest_session"
-    );
+    const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
     const token = request.cookies?.[cookieName];
 
     if (!token) {
-      throw new UnauthorizedException("Session cookie missing");
+      throw new UnauthorizedException("Unauthorized");
     }
 
     try {
-      const secret = this.configService.get<string>(
-        "JWT_SECRET",
-        "taskora_super_secret_jwt_key_2026"
-      );
-      const payload = await this.jwtService.verifyAsync(token, { secret });
-      request.user = payload;
+      const payload = await this.jwtService.verifyAsync(token);
+
+      if (!payload || payload.type !== "guest" || !payload.sub) {
+        throw new UnauthorizedException("Unauthorized");
+      }
+
+      request.user = {
+        id: payload.sub,
+        isGuest: true,
+      };
+
       return true;
     } catch {
-      throw new UnauthorizedException("Invalid or expired session cookie");
+      throw new UnauthorizedException("Unauthorized");
     }
   }
 }

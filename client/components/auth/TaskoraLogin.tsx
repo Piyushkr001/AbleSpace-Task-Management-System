@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "./GoogleIcon";
@@ -12,17 +12,19 @@ import { authApi } from "@/features/auth/api/auth.api";
 
 export default function TaskoraLogin() {
   const router = useRouter();
-  const { isLoaded, signIn } = useSignIn() as unknown as {
-    isLoaded: boolean;
-    signIn: {
-      sso?: (params: Record<string, string>) => Promise<void>;
-      authenticateWithRedirect: (params: Record<string, string>) => Promise<void>;
-    };
-  };
+  const { isSignedIn } = useUser();
+  const clerk = useClerk();
 
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // If user is already signed in with Clerk, automatically redirect to /tasks
+  useEffect(() => {
+    if (isSignedIn) {
+      router.replace("/tasks");
+    }
+  }, [isSignedIn, router]);
 
   const handleGuestLogin = async () => {
     setIsGuestLoading(true);
@@ -40,7 +42,12 @@ export default function TaskoraLogin() {
   };
 
   const handleGoogleLogin = async () => {
-    if (!isLoaded || !signIn) {
+    if (isSignedIn) {
+      router.replace("/tasks");
+      return;
+    }
+
+    if (!clerk || !clerk.client) {
       setError("Authentication system is initializing. Please try again in a moment.");
       return;
     }
@@ -49,21 +56,19 @@ export default function TaskoraLogin() {
     setError(null);
 
     try {
-      if (typeof signIn.sso === "function") {
-        await signIn.sso({
-          strategy: "oauth_google",
-          redirectCallbackUrl: "/sso-callback",
-          redirectUrl: "/tasks",
-        });
-      } else {
-        await signIn.authenticateWithRedirect({
-          strategy: "oauth_google",
-          redirectUrl: "/sso-callback",
-          redirectUrlComplete: "/tasks",
-        });
-      }
-    } catch (err) {
+      await clerk.client.signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/tasks",
+      });
+    } catch (err: unknown) {
       console.error("Clerk Google login error:", err);
+      const errorObj = err as { message?: string; errors?: Array<{ message?: string }> };
+      const msg = errorObj?.message || errorObj?.errors?.[0]?.message || "";
+      if (msg.toLowerCase().includes("already signed in")) {
+        router.replace("/tasks");
+        return;
+      }
       setError("Unable to continue with Google. Please try again.");
       setIsGoogleLoading(false);
     }
@@ -158,6 +163,9 @@ export default function TaskoraLogin() {
             )}
           </Button>
         </div>
+
+        {/* Clerk CAPTCHA Container for custom flows */}
+        <div id="clerk-captcha" />
 
         {/* Terms & Privacy */}
         <p className="text-xs text-muted-foreground leading-relaxed pt-2">

@@ -49,6 +49,7 @@ model WorkspaceMember {
   createdAt DateTime @default(now())
 
   @@id([userId, workspaceId])
+  @@index([workspaceId])
 }
 
 enum WorkspaceRole {

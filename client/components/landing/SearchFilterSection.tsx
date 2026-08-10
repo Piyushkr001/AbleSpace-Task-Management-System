@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Filter, ListFilter, Search, Tag, User } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function SearchFilterSection() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, CheckCircle2, ChevronRight, MessageSquare, Tag, User } from "lucide-react";
+import { Calendar, CheckCircle2, ChevronRight, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function ProductivitySection() {

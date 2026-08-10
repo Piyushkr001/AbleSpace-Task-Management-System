@@ -1,17 +1,18 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 export interface CurrentUserData {
-  id: string;
-  clerkId?: string;
-  email?: string;
-  fullName?: string;
+  id: string; // Local PostgreSQL User.id
+  clerkId?: string | null;
+  email?: string | null;
+  fullName?: string | null;
+  avatarUrl?: string | null;
   isGuest: boolean;
 }
 
 export const CurrentUser = createParamDecorator(
   (data: keyof CurrentUserData | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
+    const user = request.user as CurrentUserData | undefined;
 
     if (!user) {
       return null;

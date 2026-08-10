@@ -12,19 +12,38 @@ export class ApiError extends Error {
   }
 }
 
+export interface ApiClientOptions extends RequestInit {
+  token?: string;
+}
+
 export async function apiClient<T>(
   path: string,
-  options: RequestInit = {}
+  options: ApiClientOptions = {}
 ): Promise<T> {
-  const url = path.startsWith("http") ? path : `${env.API_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const url = path.startsWith("http") ? path : `${env.API_URL}${cleanPath}`;
 
   const headers = new Headers(options.headers || {});
-  if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
+
+  // Only add Content-Type: application/json when request has a body and is not FormData
+  if (
+    options.body &&
+    !headers.has("Content-Type") &&
+    !(options.body instanceof FormData)
+  ) {
     headers.set("Content-Type", "application/json");
   }
 
+  // Attach Clerk Bearer token if provided
+  if (options.token) {
+    headers.set("Authorization", `Bearer ${options.token}`);
+  }
+
+  const fetchOptions = { ...options };
+  delete fetchOptions.token;
+
   const response = await fetch(url, {
-    ...options,
+    ...fetchOptions,
     headers,
     credentials: "include",
   });
