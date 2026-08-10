@@ -1,9 +1,16 @@
-import { ThemeProvider } from '@/components/theme-provider'
-import React from 'react'
+"use client";
 
-function Provider({ children } : any) {
+import React, { ReactNode } from "react";
+import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/theme-provider";
+
+interface ProviderProps {
+  children: ReactNode;
+}
+
+function Provider({ children }: ProviderProps) {
   return (
-    <div>
+    <ClerkProvider>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -12,8 +19,8 @@ function Provider({ children } : any) {
       >
         {children}
       </ThemeProvider>
-    </div>
-  )
+    </ClerkProvider>
+  );
 }
 
-export default Provider
+export default Provider;
