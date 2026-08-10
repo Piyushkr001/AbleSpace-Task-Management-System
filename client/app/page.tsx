@@ -1,9 +1,10 @@
 import Image from "next/image";
+import LandingScreen from "./_shared/LandingScreen";
 
 export default function Home() {
   return (
     <div>
-      <p className="text-2xl">Welcome to Taskora</p>
+      <LandingScreen/>
     </div>
   );
 }
