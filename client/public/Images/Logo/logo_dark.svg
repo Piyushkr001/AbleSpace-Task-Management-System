@@ -1,0 +1,83 @@
+<svg
+  width="520"
+  height="120"
+  viewBox="0 0 520 120"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <linearGradient
+      id="brandGradient"
+      x1="22"
+      y1="20"
+      x2="430"
+      y2="100"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#2563EB" />
+      <stop offset="0.52" stop-color="#7C3AED" />
+      <stop offset="1" stop-color="#DB2777" />
+    </linearGradient>
+  </defs>
+
+  <!-- Logo Icon Background -->
+  <rect
+    x="18"
+    y="18"
+    width="84"
+    height="84"
+    rx="24"
+    fill="url(#brandGradient)"
+  />
+
+  <!-- Task Lines -->
+  <path
+    d="M43 46H78"
+    stroke="white"
+    stroke-width="7"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M43 61H72"
+    stroke="white"
+    stroke-width="7"
+    stroke-linecap="round"
+    opacity="0.9"
+  />
+
+  <!-- Check -->
+  <path
+    d="M43 77L53 86L79 58"
+    stroke="white"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Task -->
+  <text
+    x="125"
+    y="78"
+    font-family="Inter, Arial, Helvetica, sans-serif"
+    font-size="62"
+    font-weight="800"
+    letter-spacing="-3"
+    fill="#eaebecff"
+  >
+    Task
+  </text>
+
+  <!-- ora -->
+  <text
+    x="256"
+    y="78"
+    font-family="Inter, Arial, Helvetica, sans-serif"
+    font-size="62"
+    font-weight="800"
+    letter-spacing="-3"
+    fill="url(#brandGradient)"
+  >
+    ora
+  </text>
+</svg>
