@@ -2,38 +2,69 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { WorkspacesService } from "../workspaces/workspaces.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 import { TaskQueryDto } from "./dto/task-query.dto";
 import { TaskStatus, TaskPriority, Prisma } from "@prisma/client";
 
+const TASK_INCLUDE = {
+  members: {
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  },
+  labels: {
+    include: {
+      label: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+        },
+      },
+    },
+  },
+  reporter: {
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      avatarUrl: true,
+    },
+  },
+  project: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} satisfies Prisma.TaskInclude;
+
+type TaskWithRelations = Prisma.TaskGetPayload<{
+  include: typeof TASK_INCLUDE;
+}>;
+
 @Injectable()
 export class TasksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workspacesService: WorkspacesService
+  ) {}
 
   /**
-   * Helper to resolve the user's current workspace ID with P0 authorization.
+   * Strictly typed serializer with 0 `any` usage.
    */
-  private async getUserWorkspaceId(userId: string): Promise<string> {
-    const membership = await this.prisma.workspaceMember.findFirst({
-      where: { userId },
-      select: { workspaceId: true },
-    });
-
-    if (!membership) {
-      throw new UnauthorizedException("User does not belong to any workspace");
-    }
-
-    return membership.workspaceId;
-  }
-
-  /**
-   * Normalizes Task model relations for clean API DTO response shape.
-   */
-  private serializeTask(task: any) {
+  private serializeTask(task: TaskWithRelations) {
     return {
       id: task.id,
       title: task.title,
@@ -43,12 +74,13 @@ export class TasksService {
       startDate: task.startDate ? task.startDate.toISOString().split("T")[0] : null,
       dueDate: task.dueDate ? task.dueDate.toISOString().split("T")[0] : null,
       parentTaskId: task.parentTaskId ?? null,
-      members: (task.members || []).map((m: any) => ({
+      members: (task.members || []).map((m) => ({
         id: m.user.id,
-        name: m.user.fullName || m.user.email || "User",
+        fullName: m.user.fullName || m.user.email || "Workspace Member",
+        email: m.user.email ?? null,
         avatarUrl: m.user.avatarUrl ?? null,
       })),
-      labels: (task.labels || []).map((l: any) => ({
+      labels: (task.labels || []).map((l) => ({
         id: l.label.id,
         name: l.label.name,
         color: l.label.color ?? null,
@@ -56,7 +88,8 @@ export class TasksService {
       reporter: task.reporter
         ? {
             id: task.reporter.id,
-            name: task.reporter.fullName || task.reporter.email || "User",
+            fullName: task.reporter.fullName || task.reporter.email || "Workspace Member",
+            email: task.reporter.email ?? null,
             avatarUrl: task.reporter.avatarUrl ?? null,
           }
         : null,
@@ -66,50 +99,8 @@ export class TasksService {
             name: task.project.name,
           }
         : null,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-    };
-  }
-
-  private defaultTaskInclude() {
-    return {
-      members: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
-              avatarUrl: true,
-            },
-          },
-        },
-      },
-      labels: {
-        include: {
-          label: {
-            select: {
-              id: true,
-              name: true,
-              color: true,
-            },
-          },
-        },
-      },
-      reporter: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString(),
     };
   }
 
@@ -119,9 +110,9 @@ export class TasksService {
   private async validateRelatedEntities(
     workspaceId: string,
     dto: {
-      projectId?: string;
-      reporterId?: string;
-      parentTaskId?: string;
+      projectId?: string | null;
+      reporterId?: string | null;
+      parentTaskId?: string | null;
       memberIds?: string[];
       labelIds?: string[];
     }
@@ -180,13 +171,51 @@ export class TasksService {
     }
   }
 
+  /**
+   * Prevents parent task cycles (e.g. A -> B -> C -> A).
+   */
+  private async detectParentCycle(taskId: string, newParentTaskId: string): Promise<void> {
+    let currentParentId: string | null = newParentTaskId;
+    const visited = new Set<string>();
+
+    while (currentParentId) {
+      if (currentParentId === taskId) {
+        throw new BadRequestException("Parent task relationship creates a cycle");
+      }
+      if (visited.has(currentParentId)) {
+        break; // Guard against existing malformed cycles
+      }
+      visited.add(currentParentId);
+
+      const parentRecord: { parentTaskId: string | null } | null =
+        await this.prisma.task.findUnique({
+          where: { id: currentParentId },
+          select: { parentTaskId: true },
+        });
+      currentParentId = parentRecord?.parentTaskId ?? null;
+    }
+  }
+
+  /**
+   * Validates date range business rule (startDate <= dueDate).
+   */
+  private validateDates(startDate?: Date | null, dueDate?: Date | null): void {
+    if (startDate && dueDate && startDate > dueDate) {
+      throw new BadRequestException("startDate must be on or before dueDate");
+    }
+  }
+
   async createTask(userId: string, dto: CreateTaskDto) {
-    const workspaceId = await this.getUserWorkspaceId(userId);
+    const workspaceId = await this.workspacesService.getCurrentWorkspaceForUser(userId);
     await this.validateRelatedEntities(workspaceId, dto);
+
+    const startDate = dto.startDate ? new Date(dto.startDate) : null;
+    const dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
+    this.validateDates(startDate, dueDate);
 
     const task = await this.prisma.task.create({
       data: {
-        title: dto.title,
+        title: dto.title.trim(),
         description: dto.description ?? null,
         status: dto.status ?? TaskStatus.TODO,
         priority: dto.priority ?? TaskPriority.NONE,
@@ -194,20 +223,22 @@ export class TasksService {
         projectId: dto.projectId ?? null,
         reporterId: dto.reporterId ?? userId,
         parentTaskId: dto.parentTaskId ?? null,
-        startDate: dto.startDate ? new Date(dto.startDate) : null,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-        members: dto.memberIds && dto.memberIds.length > 0
-          ? {
-              create: dto.memberIds.map((mId) => ({ userId: mId })),
-            }
-          : undefined,
-        labels: dto.labelIds && dto.labelIds.length > 0
-          ? {
-              create: dto.labelIds.map((lId) => ({ labelId: lId })),
-            }
-          : undefined,
+        startDate,
+        dueDate,
+        members:
+          dto.memberIds && dto.memberIds.length > 0
+            ? {
+                create: dto.memberIds.map((mId) => ({ userId: mId })),
+              }
+            : undefined,
+        labels:
+          dto.labelIds && dto.labelIds.length > 0
+            ? {
+                create: dto.labelIds.map((lId) => ({ labelId: lId })),
+              }
+            : undefined,
       },
-      include: this.defaultTaskInclude(),
+      include: TASK_INCLUDE,
     });
 
     return {
@@ -218,7 +249,7 @@ export class TasksService {
   }
 
   async findAll(userId: string, query: TaskQueryDto) {
-    const workspaceId = await this.getUserWorkspaceId(userId);
+    const workspaceId = await this.workspacesService.getCurrentWorkspaceForUser(userId);
 
     const where: Prisma.TaskWhereInput = {
       workspaceId,
@@ -240,15 +271,15 @@ export class TasksService {
       where.priority = { in: query.priority };
     }
 
-    if (query.memberId) {
+    if (query.memberId && query.memberId.length > 0) {
       where.members = {
-        some: { userId: query.memberId },
+        some: { userId: { in: query.memberId } },
       };
     }
 
-    if (query.labelId) {
+    if (query.labelId && query.labelId.length > 0) {
       where.labels = {
-        some: { labelId: query.labelId },
+        some: { labelId: { in: query.labelId } },
       };
     }
 
@@ -259,7 +290,7 @@ export class TasksService {
     const tasks = await this.prisma.task.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      include: this.defaultTaskInclude(),
+      include: TASK_INCLUDE,
     });
 
     return {
@@ -270,14 +301,14 @@ export class TasksService {
   }
 
   async findOne(userId: string, taskId: string) {
-    const workspaceId = await this.getUserWorkspaceId(userId);
+    const workspaceId = await this.workspacesService.getCurrentWorkspaceForUser(userId);
 
     const task = await this.prisma.task.findFirst({
       where: {
         id: taskId,
         workspaceId,
       },
-      include: this.defaultTaskInclude(),
+      include: TASK_INCLUDE,
     });
 
     if (!task) {
@@ -292,7 +323,7 @@ export class TasksService {
   }
 
   async updateTask(userId: string, taskId: string, dto: UpdateTaskDto) {
-    const workspaceId = await this.getUserWorkspaceId(userId);
+    const workspaceId = await this.workspacesService.getCurrentWorkspaceForUser(userId);
 
     const existingTask = await this.prisma.task.findFirst({
       where: {
@@ -307,16 +338,40 @@ export class TasksService {
 
     await this.validateRelatedEntities(workspaceId, dto);
 
+    // 1. Prevent self parenting & cycles
+    if (dto.parentTaskId !== undefined && dto.parentTaskId !== null) {
+      if (dto.parentTaskId === taskId) {
+        throw new BadRequestException("A task cannot be its own parent");
+      }
+      await this.detectParentCycle(taskId, dto.parentTaskId);
+    }
+
+    // 2. Validate date range business rule with merged effective dates
+    const effectiveStartDate =
+      dto.startDate !== undefined
+        ? dto.startDate
+          ? new Date(dto.startDate)
+          : null
+        : existingTask.startDate;
+
+    const effectiveDueDate =
+      dto.dueDate !== undefined
+        ? dto.dueDate
+          ? new Date(dto.dueDate)
+          : null
+        : existingTask.dueDate;
+
+    this.validateDates(effectiveStartDate, effectiveDueDate);
+
+    // 3. Build Prisma update payload with explicit clearable field semantics
     const updateData: Prisma.TaskUpdateInput = {};
 
-    if (dto.title !== undefined) updateData.title = dto.title;
+    if (dto.title !== undefined) updateData.title = dto.title.trim();
     if (dto.description !== undefined) updateData.description = dto.description ?? null;
     if (dto.status !== undefined) updateData.status = dto.status;
     if (dto.priority !== undefined) updateData.priority = dto.priority;
-    if (dto.startDate !== undefined)
-      updateData.startDate = dto.startDate ? new Date(dto.startDate) : null;
-    if (dto.dueDate !== undefined)
-      updateData.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
+    if (dto.startDate !== undefined) updateData.startDate = effectiveStartDate;
+    if (dto.dueDate !== undefined) updateData.dueDate = effectiveDueDate;
 
     if (dto.projectId !== undefined) {
       updateData.project = dto.projectId
@@ -358,7 +413,7 @@ export class TasksService {
       const updatedTask = await tx.task.update({
         where: { id: taskId },
         data: updateData,
-        include: this.defaultTaskInclude(),
+        include: TASK_INCLUDE,
       });
 
       return {
@@ -370,7 +425,7 @@ export class TasksService {
   }
 
   async deleteTask(userId: string, taskId: string) {
-    const workspaceId = await this.getUserWorkspaceId(userId);
+    const workspaceId = await this.workspacesService.getCurrentWorkspaceForUser(userId);
 
     const existingTask = await this.prisma.task.findFirst({
       where: {

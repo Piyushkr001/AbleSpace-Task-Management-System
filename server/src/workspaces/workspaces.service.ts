@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { WorkspaceRole } from "@prisma/client";
 
@@ -21,5 +21,54 @@ export class WorkspacesService {
         members: true,
       },
     });
+  }
+
+  /**
+   * Centralized workspace resolution helper.
+   */
+  async getCurrentWorkspaceForUser(userId: string): Promise<string> {
+    const membership = await this.prisma.workspaceMember.findFirst({
+      where: { userId },
+      select: { workspaceId: true },
+    });
+
+    if (!membership) {
+      throw new UnauthorizedException("User does not belong to any workspace");
+    }
+
+    return membership.workspaceId;
+  }
+
+  /**
+   * Returns members of the current user's workspace.
+   */
+  async getWorkspaceMembersForUser(userId: string) {
+    const workspaceId = await this.getCurrentWorkspaceForUser(userId);
+
+    const members = await this.prisma.workspaceMember.findMany({
+      where: { workspaceId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return {
+      data: {
+        members: members.map((m) => ({
+          id: m.user.id,
+          fullName: m.user.fullName || m.user.email || "Workspace Member",
+          email: m.user.email ?? null,
+          avatarUrl: m.user.avatarUrl ?? null,
+        })),
+      },
+    };
   }
 }

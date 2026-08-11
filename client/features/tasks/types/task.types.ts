@@ -12,13 +12,20 @@ export type TaskPriority =
   | "MEDIUM"
   | "LOW";
 
-export interface TaskMember {
+export interface WorkspaceMemberUser {
   id: string;
-  name: string;
-  avatarUrl?: string;
+  fullName: string;
+  email: string | null;
+  avatarUrl: string | null;
 }
 
-export interface TaskLabel {
+export interface Label {
+  id: string;
+  name: string;
+  color: string | null;
+}
+
+export interface TaskProject {
   id: string;
   name: string;
 }
@@ -26,21 +33,18 @@ export interface TaskLabel {
 export interface Task {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
-  members: TaskMember[];
-  startDate?: string;
-  dueDate?: string;
-  labels: TaskLabel[];
-  reporter?: {
-    id: string;
-    name: string;
-  };
-  project?: {
-    id: string;
-    name: string;
-  };
+  startDate: string | null;
+  dueDate: string | null;
+  parentTaskId: string | null;
+  members: WorkspaceMemberUser[];
+  labels: Label[];
+  reporter: WorkspaceMemberUser | null;
+  project: TaskProject | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface FieldVisibility {
@@ -56,3 +60,19 @@ export interface TaskFilters {
   memberIds: string[];
   labelIds: string[];
 }
+
+export interface CreateTaskInput {
+  title: string;
+  description?: string | null;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  projectId?: string | null;
+  reporterId?: string | null;
+  parentTaskId?: string | null;
+  startDate?: string | null;
+  dueDate?: string | null;
+  memberIds?: string[];
+  labelIds?: string[];
+}
+
+export type UpdateTaskInput = Partial<CreateTaskInput>;

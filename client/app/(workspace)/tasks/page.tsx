@@ -59,6 +59,15 @@ function TasksContent() {
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Determine if any filters are active
+  const hasActiveFilters = Boolean(
+    debouncedSearch.trim() ||
+      filters.statuses.length > 0 ||
+      filters.priorities.length > 0 ||
+      filters.memberIds.length > 0 ||
+      filters.labelIds.length > 0
+  );
+
   // TanStack Query hook calling backend API (GET /api/tasks)
   const {
     data: tasks = [],
@@ -69,8 +78,8 @@ function TasksContent() {
     search: debouncedSearch || undefined,
     status: filters.statuses.length > 0 ? filters.statuses : undefined,
     priority: filters.priorities.length > 0 ? filters.priorities : undefined,
-    memberId: filters.memberIds[0] || undefined,
-    labelId: filters.labelIds[0] || undefined,
+    memberId: filters.memberIds.length > 0 ? filters.memberIds : undefined,
+    labelId: filters.labelIds.length > 0 ? filters.labelIds : undefined,
   });
 
   const handleEditTask = (task: Task) => {
@@ -165,11 +174,13 @@ function TasksContent() {
             <div className="size-10 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
               <Inbox className="size-5" />
             </div>
-            <h3 className="text-sm font-semibold text-foreground">No tasks yet</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              {hasActiveFilters ? "No tasks match your filters" : "No tasks yet"}
+            </h3>
             <p className="text-xs text-muted-foreground max-w-sm mt-1">
-              {debouncedSearch || filters.statuses.length > 0 || filters.priorities.length > 0
-                ? "We couldn't find any tasks matching your search or filters. Try adjusting your search term or parameters."
-                : "Create your first task to get started in this workspace."}
+              {hasActiveFilters
+                ? "Try adjusting your search or filters."
+                : "Create your first task to get started."}
             </p>
           </div>
         )

@@ -57,10 +57,16 @@ export function TaskToolbar({
       </div>
 
       {/* View Switch (List / Board) */}
-      <div className="flex items-center gap-1 rounded-xl border border-border/80 bg-muted/40 p-1 self-start sm:self-auto shrink-0">
+      <div
+        role="group"
+        aria-label="Task view mode"
+        className="flex items-center gap-1 rounded-xl border border-border/80 bg-muted/40 p-1 self-start sm:self-auto shrink-0"
+      >
         <Button
           variant="ghost"
           size="sm"
+          aria-label="List view"
+          aria-pressed={currentView === "list"}
           onClick={() => onViewChange("list")}
           className={cn(
             "h-7 rounded-lg px-2.5 text-xs font-medium transition-all",
@@ -76,6 +82,8 @@ export function TaskToolbar({
         <Button
           variant="ghost"
           size="sm"
+          aria-label="Board view"
+          aria-pressed={currentView === "board"}
           onClick={() => onViewChange("board")}
           className={cn(
             "h-7 rounded-lg px-2.5 text-xs font-medium transition-all",

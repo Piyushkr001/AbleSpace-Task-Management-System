@@ -6,6 +6,7 @@ import { UsersModule } from "./users/users.module";
 import { WorkspacesModule } from "./workspaces/workspaces.module";
 import { AuthModule } from "./auth/auth.module";
 import { TasksModule } from "./tasks/tasks.module";
+import { LabelsModule } from "./labels/labels.module";
 import { validateEnv } from "./config/env.validation";
 
 @Module({
@@ -20,6 +21,7 @@ import { validateEnv } from "./config/env.validation";
     WorkspacesModule,
     AuthModule,
     TasksModule,
+    LabelsModule,
   ],
 })
 export class AppModule {}

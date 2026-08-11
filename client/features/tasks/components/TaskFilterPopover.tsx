@@ -8,7 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { TaskFilters, TaskStatus, TaskPriority } from "../types/task.types";
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG, ALL_STATUSES, ALL_PRIORITIES } from "../config/task.config";
-import { MOCK_MEMBERS, MOCK_LABELS } from "../data/mock-tasks";
+import { useWorkspaceMembers } from "@/features/workspace/hooks/use-workspace-members";
+import { useLabels } from "@/features/labels/hooks/use-labels";
 
 interface TaskFilterPopoverProps {
   filters: TaskFilters;
@@ -16,6 +17,9 @@ interface TaskFilterPopoverProps {
 }
 
 export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps) {
+  const { data: members = [] } = useWorkspaceMembers();
+  const { data: labels = [] } = useLabels();
+
   const activeCount =
     filters.statuses.length +
     filters.priorities.length +
@@ -151,18 +155,24 @@ export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps)
             Members
           </span>
           <div className="mt-1 space-y-0.5">
-            {MOCK_MEMBERS.map((member) => (
-              <label
-                key={member.id}
-                className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent text-xs cursor-pointer select-none"
-              >
-                <Checkbox
-                  checked={filters.memberIds.includes(member.id)}
-                  onCheckedChange={() => toggleMember(member.id)}
-                />
-                <span>{member.name}</span>
-              </label>
-            ))}
+            {members.length > 0 ? (
+              members.map((member) => (
+                <label
+                  key={member.id}
+                  className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent text-xs cursor-pointer select-none"
+                >
+                  <Checkbox
+                    checked={filters.memberIds.includes(member.id)}
+                    onCheckedChange={() => toggleMember(member.id)}
+                  />
+                  <span className="truncate">{member.fullName}</span>
+                </label>
+              ))
+            ) : (
+              <span className="text-[11px] text-muted-foreground px-2 py-1 block">
+                No members found
+              </span>
+            )}
           </div>
         </div>
 
@@ -174,18 +184,24 @@ export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps)
             Labels
           </span>
           <div className="mt-1 space-y-0.5">
-            {MOCK_LABELS.map((label) => (
-              <label
-                key={label.id}
-                className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent text-xs cursor-pointer select-none"
-              >
-                <Checkbox
-                  checked={filters.labelIds.includes(label.id)}
-                  onCheckedChange={() => toggleLabel(label.id)}
-                />
-                <span>{label.name}</span>
-              </label>
-            ))}
+            {labels.length > 0 ? (
+              labels.map((label) => (
+                <label
+                  key={label.id}
+                  className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent text-xs cursor-pointer select-none"
+                >
+                  <Checkbox
+                    checked={filters.labelIds.includes(label.id)}
+                    onCheckedChange={() => toggleLabel(label.id)}
+                  />
+                  <span className="truncate">{label.name}</span>
+                </label>
+              ))
+            ) : (
+              <span className="text-[11px] text-muted-foreground px-2 py-1 block">
+                No labels found
+              </span>
+            )}
           </div>
         </div>
       </PopoverContent>

@@ -2,17 +2,17 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useApiAuth } from "@/hooks/use-api-auth";
-import { tasksApi, TaskQueryParams } from "../api/tasks.api";
+import { workspaceApi } from "../api/workspace.api";
 
-export function useTasks(params?: TaskQueryParams) {
+export function useWorkspaceMembers() {
   const { isLoaded, getAuthToken } = useApiAuth();
 
   return useQuery({
-    queryKey: ["tasks", params],
+    queryKey: ["workspace-members"],
     queryFn: async () => {
       const token = await getAuthToken();
-      const res = await tasksApi.getTasks(params, token);
-      return res.data.tasks;
+      const res = await workspaceApi.getMembers(token);
+      return res.data.members;
     },
     enabled: isLoaded,
   });

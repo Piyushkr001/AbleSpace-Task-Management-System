@@ -1,20 +1,18 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@clerk/nextjs";
+import { useApiAuth } from "@/hooks/use-api-auth";
 import { toast } from "react-hot-toast";
-import { tasksApi, CreateTaskPayload } from "../api/tasks.api";
+import { tasksApi } from "../api/tasks.api";
+import { CreateTaskInput } from "../types/task.types";
 
 export function useCreateTask() {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { getAuthToken } = useApiAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: CreateTaskPayload) => {
-      let token: string | undefined = undefined;
-      if (isLoaded && isSignedIn) {
-        token = (await getToken()) || undefined;
-      }
+    mutationFn: async (payload: CreateTaskInput) => {
+      const token = await getAuthToken();
       const res = await tasksApi.createTask(payload, token);
       return res.data.task;
     },

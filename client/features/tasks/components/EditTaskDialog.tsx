@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -58,10 +59,10 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
         id: task.id,
         payload: {
           title: title.trim(),
-          description: description.trim() || undefined,
+          description: description ? (description.trim().length > 0 ? description.trim() : null) : null,
           status,
           priority,
-          dueDate: dueDate || undefined,
+          dueDate: dueDate || null,
         },
       },
       {
@@ -85,8 +86,11 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
 
           <div className="space-y-3 pt-2">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Task Title</label>
+              <Label htmlFor="edit-task-title" className="text-xs font-medium text-foreground">
+                Task Title
+              </Label>
               <Input
+                id="edit-task-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="h-9 rounded-xl text-xs"
@@ -95,8 +99,11 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Description</label>
+              <Label htmlFor="edit-task-desc" className="text-xs font-medium text-foreground">
+                Description
+              </Label>
               <Textarea
+                id="edit-task-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional task description..."
@@ -106,9 +113,11 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Status</label>
+                <Label htmlFor="edit-task-status" className="text-xs font-medium text-foreground">
+                  Status
+                </Label>
                 <Select value={status} onValueChange={(val) => setStatus(val as TaskStatus)}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger id="edit-task-status" className="h-9 rounded-xl text-xs">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
@@ -122,9 +131,11 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Priority</label>
+                <Label htmlFor="edit-task-priority" className="text-xs font-medium text-foreground">
+                  Priority
+                </Label>
                 <Select value={priority} onValueChange={(val) => setPriority(val as TaskPriority)}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger id="edit-task-priority" className="h-9 rounded-xl text-xs">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
@@ -139,8 +150,11 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Due Date</label>
+              <Label htmlFor="edit-task-duedate" className="text-xs font-medium text-foreground">
+                Due Date
+              </Label>
               <Input
+                id="edit-task-duedate"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}

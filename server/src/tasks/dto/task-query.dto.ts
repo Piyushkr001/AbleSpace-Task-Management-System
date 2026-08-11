@@ -18,12 +18,14 @@ export class TaskQueryDto {
   priority?: TaskPriority[];
 
   @IsOptional()
-  @IsUUID()
-  memberId?: string;
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  @IsUUID(undefined, { each: true })
+  memberId?: string[];
 
   @IsOptional()
-  @IsUUID()
-  labelId?: string;
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  @IsUUID(undefined, { each: true })
+  labelId?: string[];
 
   @IsOptional()
   @IsUUID()

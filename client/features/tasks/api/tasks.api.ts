@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { Task, TaskStatus, TaskPriority } from "../types/task.types";
+import { Task, TaskStatus, TaskPriority, CreateTaskInput, UpdateTaskInput } from "../types/task.types";
 
 export interface TasksResponse {
   data: {
@@ -17,26 +17,10 @@ export interface TaskQueryParams {
   search?: string;
   status?: TaskStatus[];
   priority?: TaskPriority[];
-  memberId?: string;
-  labelId?: string;
+  memberId?: string[];
+  labelId?: string[];
   projectId?: string;
 }
-
-export interface CreateTaskPayload {
-  title: string;
-  description?: string;
-  status?: TaskStatus;
-  priority?: TaskPriority;
-  projectId?: string;
-  reporterId?: string;
-  parentTaskId?: string;
-  startDate?: string;
-  dueDate?: string;
-  memberIds?: string[];
-  labelIds?: string[];
-}
-
-export type UpdateTaskPayload = Partial<CreateTaskPayload>;
 
 export const tasksApi = {
   getTasks: (params?: TaskQueryParams, token?: string) => {
@@ -51,11 +35,11 @@ export const tasksApi = {
     if (params?.priority && params.priority.length > 0) {
       params.priority.forEach((p) => searchParams.append("priority", p));
     }
-    if (params?.memberId) {
-      searchParams.set("memberId", params.memberId);
+    if (params?.memberId && params.memberId.length > 0) {
+      params.memberId.forEach((mId) => searchParams.append("memberId", mId));
     }
-    if (params?.labelId) {
-      searchParams.set("labelId", params.labelId);
+    if (params?.labelId && params.labelId.length > 0) {
+      params.labelId.forEach((lId) => searchParams.append("labelId", lId));
     }
     if (params?.projectId) {
       searchParams.set("projectId", params.projectId);
@@ -76,17 +60,17 @@ export const tasksApi = {
       token,
     }),
 
-  createTask: (payload: CreateTaskPayload, token?: string) =>
+  createTask: (payload: CreateTaskInput, token?: string) =>
     apiClient<TaskResponse>("/tasks", {
       method: "POST",
-      body: JSON.stringify(payload),
+      data: payload,
       token,
     }),
 
-  updateTask: (id: string, payload: UpdateTaskPayload, token?: string) =>
+  updateTask: (id: string, payload: UpdateTaskInput, token?: string) =>
     apiClient<TaskResponse>(`/tasks/${id}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      data: payload,
       token,
     }),
 

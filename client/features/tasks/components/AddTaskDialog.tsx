@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -85,8 +86,11 @@ export function AddTaskDialog() {
 
           <div className="space-y-3 pt-2">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Task Title</label>
+              <Label htmlFor="add-task-title" className="text-xs font-medium text-foreground">
+                Task Title
+              </Label>
               <Input
+                id="add-task-title"
                 placeholder="e.g. Design Landing Page Prototype"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -96,8 +100,11 @@ export function AddTaskDialog() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Description</label>
+              <Label htmlFor="add-task-desc" className="text-xs font-medium text-foreground">
+                Description
+              </Label>
               <Textarea
+                id="add-task-desc"
                 placeholder="Optional task description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -107,9 +114,11 @@ export function AddTaskDialog() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Status</label>
+                <Label htmlFor="add-task-status" className="text-xs font-medium text-foreground">
+                  Status
+                </Label>
                 <Select value={status} onValueChange={(val) => setStatus(val as TaskStatus)}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger id="add-task-status" className="h-9 rounded-xl text-xs">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
@@ -123,9 +132,11 @@ export function AddTaskDialog() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Priority</label>
+                <Label htmlFor="add-task-priority" className="text-xs font-medium text-foreground">
+                  Priority
+                </Label>
                 <Select value={priority} onValueChange={(val) => setPriority(val as TaskPriority)}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectTrigger id="add-task-priority" className="h-9 rounded-xl text-xs">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
@@ -140,8 +151,11 @@ export function AddTaskDialog() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Due Date</label>
+              <Label htmlFor="add-task-duedate" className="text-xs font-medium text-foreground">
+                Due Date
+              </Label>
               <Input
+                id="add-task-duedate"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}

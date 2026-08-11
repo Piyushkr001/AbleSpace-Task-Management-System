@@ -57,9 +57,9 @@ export function TaskRow({ task, fields, onEdit, onDelete }: TaskRowProps) {
           <div className="flex items-center -space-x-1.5 overflow-hidden">
             {task.members.map((member) => (
               <Avatar key={member.id} className="size-6 border-2 border-card">
-                {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.name} />}
+                {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
                 <AvatarFallback className="text-[9px] font-semibold bg-muted text-muted-foreground">
-                  {member.name.substring(0, 2).toUpperCase()}
+                  {member.fullName.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             ))}
