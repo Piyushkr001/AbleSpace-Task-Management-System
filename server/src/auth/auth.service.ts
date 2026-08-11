@@ -3,6 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
 import { UsersService } from "../users/users.service";
+import { parseDurationToMs } from "../utils/duration.util";
 
 @Injectable()
 export class AuthService {
@@ -24,16 +25,19 @@ export class AuthService {
 
     const token = await this.jwtService.signAsync(payload);
 
-    // 3. Set HttpOnly Cookie
+    // 3. Set HttpOnly Cookie synchronized with JWT TTL
     const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
     const isProd =
       this.configService.get<string>("NODE_ENV") === "production";
+    const jwtExpiresIn =
+      this.configService.get<string>("JWT_EXPIRES_IN") || "7d";
+    const cookieMaxAge = parseDurationToMs(jwtExpiresIn);
 
     res.cookie(cookieName, token, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: cookieMaxAge,
       path: "/",
     });
 

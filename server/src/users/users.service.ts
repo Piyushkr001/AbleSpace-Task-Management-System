@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { createClerkClient } from "@clerk/backend";
 import { PrismaService } from "../prisma/prisma.service";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole, Prisma } from "@prisma/client";
 
 @Injectable()
 export class UsersService {
@@ -67,20 +67,11 @@ export class UsersService {
   }
 
   /**
-   * Finds existing local user by clerkId or fetches profile from Clerk API
-   * and transactionally creates User + Workspace + WorkspaceMember.
+   * Finds existing local user by clerkId (updating profile if changed) or transactionally
+   * creates User + Workspace + WorkspaceMember with race-condition safety.
    */
   async findOrCreateClerkUser(clerkId: string) {
-    // 1. Check if user already exists locally
-    const existingUser = await this.prisma.user.findUnique({
-      where: { clerkId },
-    });
-
-    if (existingUser) {
-      return existingUser;
-    }
-
-    // 2. Fetch trusted Clerk profile data
+    // 1. Fetch trusted Clerk profile data
     let email: string | null = null;
     let fullName: string | null = null;
     let avatarUrl: string | null = null;
@@ -103,35 +94,71 @@ export class UsersService {
       this.logger.warn(`Could not fetch Clerk user profile for ${clerkId}: ${error}`);
     }
 
-    // 3. Transactionally create User, Workspace, and WorkspaceMember
-    return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          clerkId,
-          email,
-          fullName: fullName || "Taskora User",
-          avatarUrl,
-          isGuest: false,
-        },
-      });
-
-      const workspaceName = fullName ? `${fullName}'s Workspace` : "Taskora Workspace";
-
-      const workspace = await tx.workspace.create({
-        data: {
-          name: workspaceName,
-        },
-      });
-
-      await tx.workspaceMember.create({
-        data: {
-          userId: user.id,
-          workspaceId: workspace.id,
-          role: WorkspaceRole.OWNER,
-        },
-      });
-
-      return user;
+    // 2. Check if user already exists locally
+    const existingUser = await this.prisma.user.findUnique({
+      where: { clerkId },
     });
+
+    if (existingUser) {
+      // Refresh profile data if safe and changed (Task A5)
+      const updates: Prisma.UserUpdateInput = {};
+      if (email && email !== existingUser.email) updates.email = email;
+      if (fullName && fullName !== existingUser.fullName) updates.fullName = fullName;
+      if (avatarUrl && avatarUrl !== existingUser.avatarUrl) updates.avatarUrl = avatarUrl;
+
+      if (Object.keys(updates).length > 0) {
+        return this.prisma.user.update({
+          where: { id: existingUser.id },
+          data: updates,
+        });
+      }
+
+      return existingUser;
+    }
+
+    // 3. Race-safe creation using Prisma transaction with unique conflict fallback (Task A4)
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            clerkId,
+            email,
+            fullName: fullName || "Taskora User",
+            avatarUrl,
+            isGuest: false,
+          },
+        });
+
+        const workspaceName = fullName ? `${fullName}'s Workspace` : "Taskora Workspace";
+
+        const workspace = await tx.workspace.create({
+          data: {
+            name: workspaceName,
+          },
+        });
+
+        await tx.workspaceMember.create({
+          data: {
+            userId: user.id,
+            workspaceId: workspace.id,
+            role: WorkspaceRole.OWNER,
+          },
+        });
+
+        return user;
+      });
+    } catch (error) {
+      // If a race condition occurred (P2002 unique constraint conflict on clerkId or email)
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        this.logger.log(`Race condition caught on user creation for ${clerkId}, refetching...`);
+        const userAfterRace = await this.prisma.user.findUnique({
+          where: { clerkId },
+        });
+        if (userAfterRace) {
+          return userAfterRace;
+        }
+      }
+      throw error;
+    }
   }
 }
