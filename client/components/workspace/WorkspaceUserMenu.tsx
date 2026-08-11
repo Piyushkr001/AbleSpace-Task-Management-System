@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { LogOut, User as UserIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authApi } from "@/features/auth/api/auth.api";
@@ -53,6 +54,7 @@ export function WorkspaceUserMenu() {
         await clerk.signOut();
       }
       await authApi.logout();
+      toast.success("Logged out successfully");
     } catch (err) {
       console.error("Logout error:", err);
     } finally {

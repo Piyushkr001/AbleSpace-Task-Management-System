@@ -12,9 +12,11 @@ interface TaskGroupProps {
   status: TaskStatus;
   tasks: Task[];
   fields: FieldVisibility;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
-export function TaskGroup({ status, tasks, fields }: TaskGroupProps) {
+export function TaskGroup({ status, tasks, fields, onEdit, onDelete }: TaskGroupProps) {
   const [isOpen, setIsOpen] = useState(true);
   const statusConfig = TASK_STATUS_CONFIG[status];
 
@@ -52,7 +54,13 @@ export function TaskGroup({ status, tasks, fields }: TaskGroupProps) {
       {isOpen && (
         <div className="space-y-1.5 pl-2 sm:pl-4">
           {tasks.map((task) => (
-            <TaskRow key={task.id} task={task} fields={fields} />
+            <TaskRow
+              key={task.id}
+              task={task}
+              fields={fields}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ))}
         </div>
       )}

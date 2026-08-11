@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "./GoogleIcon";
 import { authApi } from "@/features/auth/api/auth.api";
@@ -32,11 +33,13 @@ export default function TaskoraLogin() {
 
     try {
       await authApi.guestLogin();
+      toast.success("Signed in as Guest");
       router.replace("/tasks");
       router.refresh();
     } catch (err) {
       console.error("Guest login error:", err);
       setError("Unable to start a guest session. Please try again.");
+      toast.error("Unable to start guest session");
       setIsGuestLoading(false);
     }
   };
@@ -70,6 +73,7 @@ export default function TaskoraLogin() {
         return;
       }
       setError("Unable to continue with Google. Please try again.");
+      toast.error("Google authentication failed");
       setIsGoogleLoading(false);
     }
   };

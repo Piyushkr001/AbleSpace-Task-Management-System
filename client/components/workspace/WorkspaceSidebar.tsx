@@ -78,7 +78,7 @@ export function WorkspaceSidebar({ onNavClick }: WorkspaceSidebarProps) {
 
         {/* Projects */}
         <Link
-          href="/tasks"
+          href="/projects"
           onClick={onNavClick}
           aria-current={isProjectsActive ? "page" : undefined}
           className={cn(

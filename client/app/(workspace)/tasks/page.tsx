@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Inbox } from "lucide-react";
+import { AlertCircle, Inbox, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { TaskToolbar } from "@/features/tasks/components/TaskToolbar";
 import { TaskListView } from "@/features/tasks/components/list/TaskListView";
 import { TaskBoardView } from "@/features/tasks/components/board/TaskBoardView";
-import { INITIAL_MOCK_TASKS } from "@/features/tasks/data/mock-tasks";
+import { EditTaskDialog } from "@/features/tasks/components/EditTaskDialog";
+import { DeleteTaskDialog } from "@/features/tasks/components/DeleteTaskDialog";
 import { FieldVisibility, TaskFilters, Task } from "@/features/tasks/types/task.types";
+import { useTasks } from "@/features/tasks/hooks/use-tasks";
 
 function TasksContent() {
   const router = useRouter();
@@ -22,13 +25,19 @@ function TasksContent() {
     router.replace(`/tasks?${params.toString()}`);
   };
 
-  // Local state for mock tasks list (supports adding tasks)
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_MOCK_TASKS);
-
-  // Local state for search query
+  // Search input & debounced search term (250ms)
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Local state for field visibility
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Local state for field visibility (Frontend-only UI preference)
   const [fields, setFields] = useState<FieldVisibility>({
     priority: true,
     members: true,
@@ -44,61 +53,35 @@ function TasksContent() {
     labelIds: [],
   });
 
-  // Add task handler (mock creation)
-  const handleAddTask = (newTask: Partial<Task>) => {
-    const created: Task = {
-      id: `task-${Date.now()}`,
-      title: newTask.title || "New Task",
-      description: newTask.description || "",
-      status: newTask.status || "TODO",
-      priority: newTask.priority || "MEDIUM",
-      members: newTask.members || [],
-      dueDate: newTask.dueDate || new Date().toISOString().split("T")[0],
-      labels: newTask.labels || [],
-    };
-    setTasks((prev) => [created, ...prev]);
+  // Edit / Delete dialog state
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // TanStack Query hook calling backend API (GET /api/tasks)
+  const {
+    data: tasks = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useTasks({
+    search: debouncedSearch || undefined,
+    status: filters.statuses.length > 0 ? filters.statuses : undefined,
+    priority: filters.priorities.length > 0 ? filters.priorities : undefined,
+    memberId: filters.memberIds[0] || undefined,
+    labelId: filters.labelIds[0] || undefined,
+  });
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setIsEditDialogOpen(true);
   };
 
-  // Combined Search + Filtering Pipeline
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      // 1. Search Query Filter (Title, Description, or Labels)
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const matchesTitle = task.title.toLowerCase().includes(query);
-        const matchesDesc = task.description?.toLowerCase().includes(query);
-        const matchesLabel = task.labels?.some((l) => l.name.toLowerCase().includes(query));
-
-        if (!matchesTitle && !matchesDesc && !matchesLabel) {
-          return false;
-        }
-      }
-
-      // 2. Status Filter
-      if (filters.statuses.length > 0 && !filters.statuses.includes(task.status)) {
-        return false;
-      }
-
-      // 3. Priority Filter
-      if (filters.priorities.length > 0 && !filters.priorities.includes(task.priority)) {
-        return false;
-      }
-
-      // 4. Members Filter
-      if (filters.memberIds.length > 0) {
-        const hasMember = task.members?.some((m) => filters.memberIds.includes(m.id));
-        if (!hasMember) return false;
-      }
-
-      // 5. Labels Filter
-      if (filters.labelIds.length > 0) {
-        const hasLabel = task.labels?.some((l) => filters.labelIds.includes(l.id));
-        if (!hasLabel) return false;
-      }
-
-      return true;
-    });
-  }, [tasks, searchQuery, filters]);
+  const handleDeleteTask = (task: Task) => {
+    setDeletingTask(task);
+    setIsDeleteDialogOpen(true);
+  };
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
@@ -124,28 +107,86 @@ function TasksContent() {
         onFieldsChange={setFields}
         filters={filters}
         onFiltersChange={setFilters}
-        onAddTask={handleAddTask}
       />
 
-      {/* Content Views */}
-      {filteredTasks.length > 0 ? (
-        currentView === "board" ? (
-          <TaskBoardView tasks={filteredTasks} fields={fields} />
-        ) : (
-          <TaskListView tasks={filteredTasks} fields={fields} />
-        )
-      ) : (
-        /* Empty State */
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl border border-dashed border-border/80 bg-card/40 my-4">
-          <div className="size-10 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
-            <Inbox className="size-5" />
-          </div>
-          <h3 className="text-sm font-semibold text-foreground">No tasks found</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mt-1">
-            We couldn&apos;t find any tasks matching your search or filters. Try adjusting your filter parameters or search term.
-          </p>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <Loader2 className="size-6 animate-spin text-primary mb-2" />
+          <p className="text-xs font-medium">Loading tasks from workspace...</p>
         </div>
       )}
+
+      {/* Error State */}
+      {!isLoading && isError && (
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl border border-destructive/20 bg-destructive/5 my-4 space-y-3">
+          <div className="size-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
+            <AlertCircle className="size-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Unable to load tasks</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1">
+              Could not retrieve workspace tasks. Please check your backend connection and try again.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="h-8 rounded-xl text-xs"
+          >
+            <RefreshCw className="size-3 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Content Views */}
+      {!isLoading && !isError && (
+        tasks.length > 0 ? (
+          currentView === "board" ? (
+            <TaskBoardView
+              tasks={tasks}
+              fields={fields}
+              onEdit={handleEditTask}
+              onDelete={handleDeleteTask}
+            />
+          ) : (
+            <TaskListView
+              tasks={tasks}
+              fields={fields}
+              onEdit={handleEditTask}
+              onDelete={handleDeleteTask}
+            />
+          )
+        ) : (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl border border-dashed border-border/80 bg-card/40 my-4">
+            <div className="size-10 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
+              <Inbox className="size-5" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">No tasks yet</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1">
+              {debouncedSearch || filters.statuses.length > 0 || filters.priorities.length > 0
+                ? "We couldn't find any tasks matching your search or filters. Try adjusting your search term or parameters."
+                : "Create your first task to get started in this workspace."}
+            </p>
+          </div>
+        )
+      )}
+
+      {/* Edit & Delete Dialogs */}
+      <EditTaskDialog
+        key={editingTask?.id || "edit-dialog"}
+        task={editingTask}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
+      <DeleteTaskDialog
+        task={deletingTask}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      />
     </div>
   );
 }

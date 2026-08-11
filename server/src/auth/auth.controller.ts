@@ -5,11 +5,13 @@ import {
   HttpStatus,
   Post,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
 import { AuthService } from "./auth.service";
 import { UnifiedAuthGuard } from "./guards/unified-auth.guard";
+import { ClerkAuthGuard } from "./guards/clerk-auth.guard";
 import {
   CurrentUser,
   CurrentUserData,
@@ -23,6 +25,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async guestLogin(@Res({ passthrough: true }) res: Response) {
     return this.authService.createGuestSession(res);
+  }
+
+  @Post("sync")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ClerkAuthGuard)
+  async syncUser(@CurrentUser() user: CurrentUserData) {
+    if (!user.clerkId) {
+      throw new UnauthorizedException("Clerk user ID missing");
+    }
+    return this.authService.syncUser(user.clerkId);
   }
 
   @Get("me")

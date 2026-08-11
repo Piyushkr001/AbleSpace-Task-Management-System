@@ -7,9 +7,11 @@ import { TaskGroup } from "./TaskGroup";
 interface TaskListViewProps {
   tasks: Task[];
   fields: FieldVisibility;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
-export function TaskListView({ tasks, fields }: TaskListViewProps) {
+export function TaskListView({ tasks, fields, onEdit, onDelete }: TaskListViewProps) {
   // Group tasks by status
   const tasksByStatus = ALL_STATUSES.reduce((acc, status) => {
     acc[status] = tasks.filter((t) => t.status === status);
@@ -24,6 +26,8 @@ export function TaskListView({ tasks, fields }: TaskListViewProps) {
           status={status}
           tasks={tasksByStatus[status] || []}
           fields={fields}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </div>

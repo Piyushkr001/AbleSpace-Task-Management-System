@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TaskFieldsPopover } from "./TaskFieldsPopover";
 import { TaskFilterPopover } from "./TaskFilterPopover";
 import { AddTaskDialog } from "./AddTaskDialog";
-import { FieldVisibility, TaskFilters, Task } from "../types/task.types";
+import { FieldVisibility, TaskFilters } from "../types/task.types";
 import { cn } from "@/lib/utils";
 
 interface TaskToolbarProps {
@@ -18,7 +18,6 @@ interface TaskToolbarProps {
   onFieldsChange: (fields: FieldVisibility) => void;
   filters: TaskFilters;
   onFiltersChange: (filters: TaskFilters) => void;
-  onAddTask?: (task: Partial<Task>) => void;
 }
 
 export function TaskToolbar({
@@ -30,7 +29,6 @@ export function TaskToolbar({
   onFieldsChange,
   filters,
   onFiltersChange,
-  onAddTask,
 }: TaskToolbarProps) {
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4">
@@ -55,7 +53,7 @@ export function TaskToolbar({
         <TaskFilterPopover filters={filters} onChange={onFiltersChange} />
 
         {/* Add Task Button */}
-        <AddTaskDialog onAddTask={onAddTask} />
+        <AddTaskDialog />
       </div>
 
       {/* View Switch (List / Board) */}

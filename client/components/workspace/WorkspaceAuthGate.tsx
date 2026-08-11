@@ -3,7 +3,8 @@
 import { useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { authApi } from "@/features/auth/api/auth.api";
 
 interface WorkspaceAuthGateProps {
@@ -15,53 +16,71 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
   const pathname = usePathname();
   const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = useAuth();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isGuestAuthenticated, setIsGuestAuthenticated] = useState<boolean | null>(null);
+  const [hasServerError, setHasServerError] = useState(false);
+
+  const checkAuth = () => {
+    setHasServerError(false);
+
+    if (!isClerkLoaded || isClerkSignedIn) return;
+
+    authApi
+      .getCurrentUser()
+      .then((res) => {
+        if (res?.data?.user) {
+          setIsGuestAuthenticated(true);
+        } else {
+          setIsGuestAuthenticated(false);
+          router.replace("/login");
+        }
+      })
+      .catch((err: unknown) => {
+        const status = (err as { status?: number })?.status;
+        if (status === 401) {
+          setIsGuestAuthenticated(false);
+          router.replace("/login");
+        } else {
+          setHasServerError(true);
+        }
+      });
+  };
 
   useEffect(() => {
     let isMounted = true;
 
-    async function checkAuth() {
-      if (!isClerkLoaded) return;
+    if (!isClerkLoaded || isClerkSignedIn) return;
 
-      // 1. If Clerk is authenticated, allow immediately
-      if (isClerkSignedIn) {
-        if (isMounted) {
-          setIsAuthenticated(true);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      // 2. Otherwise check Guest session cookie on NestJS backend
-      try {
-        const res = await authApi.getCurrentUser();
-        if (isMounted) {
-          if (res?.data?.user) {
-            setIsAuthenticated(true);
-          } else {
-            setIsAuthenticated(false);
-            router.replace("/login");
-          }
-          setIsLoading(false);
-        }
-      } catch {
-        if (isMounted) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
+    authApi
+      .getCurrentUser()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res?.data?.user) {
+          setIsGuestAuthenticated(true);
+        } else {
+          setIsGuestAuthenticated(false);
           router.replace("/login");
         }
-      }
-    }
-
-    checkAuth();
+      })
+      .catch((err: unknown) => {
+        if (!isMounted) return;
+        const status = (err as { status?: number })?.status;
+        if (status === 401) {
+          setIsGuestAuthenticated(false);
+          router.replace("/login");
+        } else {
+          setHasServerError(true);
+        }
+      });
 
     return () => {
       isMounted = false;
     };
   }, [isClerkLoaded, isClerkSignedIn, router, pathname]);
 
-  if (isLoading || !isAuthenticated) {
+  const isAuthenticated = Boolean(isClerkSignedIn || isGuestAuthenticated);
+  const isLoading = !isClerkLoaded || (!isClerkSignedIn && isGuestAuthenticated === null && !hasServerError);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background text-muted-foreground p-4">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -70,6 +89,35 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
         </div>
       </div>
     );
+  }
+
+  if (hasServerError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4">
+        <div className="max-w-md w-full text-center space-y-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
+          <div className="mx-auto size-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
+            <AlertCircle className="size-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-semibold">Workspace Temporarily Unavailable</h3>
+            <p className="text-xs text-muted-foreground">
+              Unable to connect to the authentication server. Please check your connection and try again.
+            </p>
+          </div>
+          <Button
+            onClick={checkAuth}
+            className="h-9 rounded-xl px-4 text-xs font-medium"
+          >
+            <RefreshCw className="size-3.5 mr-2" />
+            <span>Retry Connection</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return <>{children}</>;

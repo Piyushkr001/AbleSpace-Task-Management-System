@@ -1,3 +1,4 @@
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { env } from "@/lib/env";
 
 export class ApiError extends Error {
@@ -12,58 +13,70 @@ export class ApiError extends Error {
   }
 }
 
-export interface ApiClientOptions extends RequestInit {
+export const axiosInstance = axios.create({
+  baseURL: env.API_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export interface ApiClientOptions extends Omit<AxiosRequestConfig, "url"> {
   token?: string;
+  body?: unknown;
 }
 
 export async function apiClient<T>(
   path: string,
   options: ApiClientOptions = {}
 ): Promise<T> {
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  const url = path.startsWith("http") ? path : `${env.API_URL}${cleanPath}`;
+  const { token, body, headers, ...axiosOptions } = options;
 
-  const headers = new Headers(options.headers || {});
+  const requestHeaders: Record<string, string> = {
+    ...(headers as Record<string, string>),
+  };
 
-  // Only add Content-Type: application/json when request has a body and is not FormData
-  if (
-    options.body &&
-    !headers.has("Content-Type") &&
-    !(options.body instanceof FormData)
-  ) {
-    headers.set("Content-Type", "application/json");
+  if (token) {
+    requestHeaders["Authorization"] = `Bearer ${token}`;
   }
 
-  // Attach Clerk Bearer token if provided
-  if (options.token) {
-    headers.set("Authorization", `Bearer ${options.token}`);
+  // Support legacy `body` stringified parameter or direct data payload
+  let data = options.data ?? body;
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      // Keep as string if not JSON
+    }
   }
 
-  const fetchOptions = { ...options };
-  delete fetchOptions.token;
+  try {
+    const response = await axiosInstance<T>({
+      url: path,
+      headers: requestHeaders,
+      data,
+      ...axiosOptions,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const axiosErr = error as AxiosError<{ message?: string; error?: string }>;
+      const status = axiosErr.response?.status || 500;
+      const respData = axiosErr.response?.data;
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-    credentials: "include",
-  });
+      const errorMessage =
+        (respData && typeof respData === "object" && "message" in respData && typeof respData.message === "string"
+          ? respData.message
+          : null) ||
+        (respData && typeof respData === "object" && "error" in respData && typeof respData.error === "string"
+          ? respData.error
+          : null) ||
+        axiosErr.message ||
+        `HTTP Error ${status}`;
 
-  const contentType = response.headers.get("content-type");
-  const isJson = contentType && contentType.includes("application/json");
-  const data = isJson ? await response.json() : null;
+      throw new ApiError(errorMessage, status, respData);
+    }
 
-  if (!response.ok) {
-    const errorMessage =
-      (data && typeof data === "object" && "message" in data && typeof data.message === "string"
-        ? data.message
-        : null) ||
-      (data && typeof data === "object" && "error" in data && typeof data.error === "string"
-        ? data.error
-        : null) ||
-      `HTTP Error ${response.status}`;
-
-    throw new ApiError(errorMessage, response.status, data);
+    throw new ApiError((error as Error).message || "Network Error", 500);
   }
-
-  return data as T;
 }

@@ -1,8 +1,15 @@
 "use client";
 
-import { Calendar, Tag } from "lucide-react";
+import { Calendar, MoreVertical, Edit3, Trash2, Tag } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Task, FieldVisibility } from "../../types/task.types";
 import { TASK_PRIORITY_CONFIG } from "../../config/task.config";
 import { cn } from "@/lib/utils";
@@ -10,9 +17,11 @@ import { cn } from "@/lib/utils";
 interface TaskRowProps {
   task: Task;
   fields: FieldVisibility;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
-export function TaskRow({ task, fields }: TaskRowProps) {
+export function TaskRow({ task, fields, onEdit, onDelete }: TaskRowProps) {
   const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
 
   return (
@@ -31,7 +40,7 @@ export function TaskRow({ task, fields }: TaskRowProps) {
         </div>
       </div>
 
-      {/* Metadata Fields */}
+      {/* Metadata Fields & Menu */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-muted-foreground shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40">
         {/* Priority */}
         {fields.priority && (
@@ -80,6 +89,42 @@ export function TaskRow({ task, fields }: TaskRowProps) {
             ))}
           </div>
         )}
+
+        {/* Action Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 rounded-lg text-muted-foreground hover:text-foreground opacity-80 group-hover:opacity-100"
+                aria-label="Task actions"
+              />
+            }
+          >
+            <MoreVertical className="size-3.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-36 rounded-xl p-1">
+            {onEdit && (
+              <DropdownMenuItem
+                onClick={() => onEdit(task)}
+                className="text-xs cursor-pointer rounded-lg"
+              >
+                <Edit3 className="size-3.5 mr-2 text-muted-foreground" />
+                <span>Edit Task</span>
+              </DropdownMenuItem>
+            )}
+            {onDelete && (
+              <DropdownMenuItem
+                onClick={() => onDelete(task)}
+                className="text-xs cursor-pointer rounded-lg text-destructive focus:text-destructive"
+              >
+                <Trash2 className="size-3.5 mr-2" />
+                <span>Delete Task</span>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

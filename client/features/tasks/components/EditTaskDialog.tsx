@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -21,65 +19,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TaskStatus, TaskPriority } from "../types/task.types";
+import { Task, TaskStatus, TaskPriority } from "../types/task.types";
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG, ALL_STATUSES, ALL_PRIORITIES } from "../config/task.config";
-import { useCreateTask } from "../hooks/use-create-task";
+import { useUpdateTask } from "../hooks/use-update-task";
 
-export function AddTaskDialog() {
-  const createTaskMutation = useCreateTask();
+interface EditTaskDialogProps {
+  task: Task | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<TaskStatus>("TODO");
-  const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
-  const [dueDate, setDueDate] = useState("");
+export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps) {
+  const updateTaskMutation = useUpdateTask();
+
+  const [title, setTitle] = useState(task?.title || "");
+  const [description, setDescription] = useState(task?.description || "");
+  const [status, setStatus] = useState<TaskStatus>(task?.status || "TODO");
+  const [priority, setPriority] = useState<TaskPriority>(task?.priority || "NONE");
+  const [dueDate, setDueDate] = useState(task?.dueDate || "");
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen && task) {
+      setTitle(task.title || "");
+      setDescription(task.description || "");
+      setStatus(task.status || "TODO");
+      setPriority(task.priority || "NONE");
+      setDueDate(task.dueDate || "");
+    }
+    onOpenChange(newOpen);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!task || !title.trim()) return;
 
-    createTaskMutation.mutate(
+    updateTaskMutation.mutate(
       {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        status,
-        priority,
-        dueDate: dueDate || undefined,
+        id: task.id,
+        payload: {
+          title: title.trim(),
+          description: description.trim() || undefined,
+          status,
+          priority,
+          dueDate: dueDate || undefined,
+        },
       },
       {
         onSuccess: () => {
-          setTitle("");
-          setDescription("");
-          setStatus("TODO");
-          setPriority("MEDIUM");
-          setDueDate("");
-          setOpen(false);
+          onOpenChange(false);
         },
       }
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button
-            size="sm"
-            className="h-9 rounded-xl px-3.5 font-medium shadow-xs bg-primary hover:opacity-90 text-xs"
-          />
-        }
-      >
-        <Plus className="size-3.5 mr-1.5" />
-        <span>Add Task</span>
-      </DialogTrigger>
-
+    <Dialog open={open && Boolean(task)} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md rounded-2xl p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">New Task</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">Edit Task</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Create a new task in your workspace.
+              Update task parameters in your workspace.
             </DialogDescription>
           </DialogHeader>
 
@@ -87,7 +87,6 @@ export function AddTaskDialog() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-foreground">Task Title</label>
               <Input
-                placeholder="e.g. Design Landing Page Prototype"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="h-9 rounded-xl text-xs"
@@ -98,9 +97,9 @@ export function AddTaskDialog() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-foreground">Description</label>
               <Textarea
-                placeholder="Optional task description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional task description..."
                 className="rounded-xl text-xs min-h-20"
               />
             </div>
@@ -154,17 +153,17 @@ export function AddTaskDialog() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
               className="h-9 rounded-xl text-xs"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createTaskMutation.isPending}
+              disabled={updateTaskMutation.isPending}
               className="h-9 rounded-xl text-xs"
             >
-              {createTaskMutation.isPending ? "Creating..." : "Create Task"}
+              {updateTaskMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

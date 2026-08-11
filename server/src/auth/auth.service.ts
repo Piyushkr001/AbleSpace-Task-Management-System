@@ -54,6 +54,21 @@ export class AuthService {
     };
   }
 
+  async syncUser(clerkUserId: string) {
+    const user = await this.usersService.findOrCreateClerkUser(clerkUserId);
+    return {
+      data: {
+        user: {
+          id: user.id,
+          fullName: user.fullName ?? null,
+          email: user.email ?? null,
+          avatarUrl: user.avatarUrl ?? null,
+          isGuest: false,
+        },
+      },
+    };
+  }
+
   async getCurrentUser(userId: string) {
     const user = await this.usersService.findById(userId);
     if (!user) {

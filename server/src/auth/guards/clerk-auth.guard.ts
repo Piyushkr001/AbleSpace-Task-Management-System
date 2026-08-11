@@ -55,8 +55,11 @@ export class ClerkAuthGuard implements CanActivate {
       throw new UnauthorizedException("Unauthorized");
     }
 
-    // DB/Profile failures bubble up normally as server errors instead of fake 401s
-    const localUser = await this.usersService.findOrCreateClerkUser(clerkUserId);
+    // Fast local lookup to avoid calling external Clerk APIs on every request
+    let localUser = await this.usersService.findByClerkId(clerkUserId);
+    if (!localUser) {
+      localUser = await this.usersService.findOrCreateClerkUser(clerkUserId);
+    }
 
     // Clear any existing Guest session cookie when authenticating via Clerk
     const cookieName = this.configService.get<string>("COOKIE_NAME", "taskora_guest_session");

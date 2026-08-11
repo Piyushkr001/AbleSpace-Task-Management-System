@@ -24,8 +24,8 @@ export function ClerkUserSync() {
         const token = await getToken();
         if (!token || isCancelled) return;
 
-        // Only mark sync complete AFTER successful backend sync
-        await authApi.getCurrentUser(token);
+        // Call explicit POST /api/auth/sync endpoint
+        await authApi.syncUser(token);
         if (!isCancelled) {
           syncedRef.current = userId;
         }

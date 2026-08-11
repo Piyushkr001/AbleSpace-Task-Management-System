@@ -10,9 +10,11 @@ interface TaskBoardColumnProps {
   status: TaskStatus;
   tasks: Task[];
   fields: FieldVisibility;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
-export function TaskBoardColumn({ status, tasks, fields }: TaskBoardColumnProps) {
+export function TaskBoardColumn({ status, tasks, fields, onEdit, onDelete }: TaskBoardColumnProps) {
   const statusConfig = TASK_STATUS_CONFIG[status];
 
   return (
@@ -38,7 +40,13 @@ export function TaskBoardColumn({ status, tasks, fields }: TaskBoardColumnProps)
       <div className="flex-1 space-y-2.5 overflow-y-auto pr-0.5">
         {tasks.length > 0 ? (
           tasks.map((task) => (
-            <TaskCard key={task.id} task={task} fields={fields} />
+            <TaskCard
+              key={task.id}
+              task={task}
+              fields={fields}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ))
         ) : (
           <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-border/60 text-[11px] text-muted-foreground">

@@ -69,4 +69,5 @@ export const TASK_PRIORITY_CONFIG: Record<TaskPriority, PriorityConfigItem> = {
 };
 
 export const ALL_STATUSES: TaskStatus[] = ["TODO", "DOING", "COMPLETED", "ON_HOLD", "BACKLOG"];
+export const BOARD_STATUSES: TaskStatus[] = ["TODO", "DOING", "COMPLETED", "ON_HOLD"];
 export const ALL_PRIORITIES: TaskPriority[] = ["URGENT", "HIGH", "MEDIUM", "LOW", "NONE"];
