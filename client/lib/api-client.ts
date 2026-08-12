@@ -49,19 +49,26 @@ export async function apiClient<T>(
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const axiosErr = error as AxiosError<{ message?: string; error?: string }>;
+      const axiosErr = error as AxiosError<{ message?: string | string[]; error?: string }>;
       const status = axiosErr.response?.status || 500;
       const respData = axiosErr.response?.data;
 
-      const errorMessage =
-        (respData && typeof respData === "object" && "message" in respData && typeof respData.message === "string"
-          ? respData.message
-          : null) ||
-        (respData && typeof respData === "object" && "error" in respData && typeof respData.error === "string"
-          ? respData.error
-          : null) ||
-        axiosErr.message ||
-        `HTTP Error ${status}`;
+      let errorMessage: string | null = null;
+
+      if (respData && typeof respData === "object") {
+        if ("message" in respData) {
+          if (Array.isArray(respData.message)) {
+            errorMessage = respData.message.join(", ");
+          } else if (typeof respData.message === "string") {
+            errorMessage = respData.message;
+          }
+        }
+        if (!errorMessage && "error" in respData && typeof respData.error === "string") {
+          errorMessage = respData.error;
+        }
+      }
+
+      errorMessage = errorMessage || axiosErr.message || `HTTP Error ${status}`;
 
       throw new ApiError(errorMessage, status, respData);
     }

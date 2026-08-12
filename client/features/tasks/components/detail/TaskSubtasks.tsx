@@ -92,33 +92,39 @@ export function TaskSubtasks({ task }: TaskSubtasksProps) {
             const priorityConfig = TASK_PRIORITY_CONFIG[subtask.priority];
 
             return (
-              <Link key={subtask.id} href={`/tasks/${subtask.id}`}>
-                <div className="group flex items-center justify-between gap-2.5 rounded-xl border border-border/40 bg-background p-2.5 hover:border-border transition-all hover:shadow-2xs">
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <button
-                      type="button"
-                      onClick={(e) => handleToggleCompleted(e, subtask)}
-                      className="text-muted-foreground hover:text-primary transition-colors shrink-0"
-                      aria-label={isCompleted ? "Mark incomplete" : "Mark completed"}
-                    >
-                      {isCompleted ? (
-                        <CheckCircle2 className="size-4 text-primary fill-primary/10" />
-                      ) : (
-                        <Circle className="size-4" />
-                      )}
-                    </button>
+              <div
+                key={subtask.id}
+                className="group flex items-center justify-between gap-2.5 rounded-xl border border-border/40 bg-background p-2.5 hover:border-border transition-all hover:shadow-2xs"
+              >
+                {/* Status Toggle Button (Outside Link to avoid nested interactive elements) */}
+                <button
+                  type="button"
+                  onClick={(e) => handleToggleCompleted(e, subtask)}
+                  className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                  aria-label={isCompleted ? "Mark subtask incomplete" : "Mark subtask completed"}
+                >
+                  {isCompleted ? (
+                    <CheckCircle2 className="size-4 text-primary fill-primary/10" />
+                  ) : (
+                    <Circle className="size-4" />
+                  )}
+                </button>
 
-                    <span
-                      className={cn(
-                        "text-xs font-medium truncate transition-colors",
-                        isCompleted
-                          ? "line-through text-muted-foreground"
-                          : "text-foreground group-hover:text-primary"
-                      )}
-                    >
-                      {subtask.title}
-                    </span>
-                  </div>
+                {/* Subtask Title & Metadata Link */}
+                <Link
+                  href={`/tasks/${subtask.id}`}
+                  className="flex items-center justify-between gap-2.5 min-w-0 flex-1"
+                >
+                  <span
+                    className={cn(
+                      "text-xs font-medium truncate transition-colors",
+                      isCompleted
+                        ? "line-through text-muted-foreground"
+                        : "text-foreground group-hover:text-primary"
+                    )}
+                  >
+                    {subtask.title}
+                  </span>
 
                   <div className="flex items-center gap-2 shrink-0">
                     {subtask.priority !== "NONE" && (
@@ -136,8 +142,8 @@ export function TaskSubtasks({ task }: TaskSubtasksProps) {
                       <span className="text-[10px] text-muted-foreground">{subtask.dueDate}</span>
                     )}
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             );
           })
         ) : (

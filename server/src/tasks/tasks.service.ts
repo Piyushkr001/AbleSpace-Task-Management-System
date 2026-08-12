@@ -221,7 +221,7 @@ export class TasksService {
         priority: dto.priority ?? TaskPriority.NONE,
         workspaceId,
         projectId: dto.projectId ?? null,
-        reporterId: dto.reporterId ?? userId,
+        reporterId: dto.reporterId === undefined ? userId : dto.reporterId,
         parentTaskId: dto.parentTaskId ?? null,
         startDate,
         dueDate,

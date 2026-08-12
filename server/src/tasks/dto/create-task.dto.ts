@@ -30,10 +30,12 @@ export class CreateTaskDto {
   description?: string | null;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
 
@@ -63,12 +65,14 @@ export class CreateTaskDto {
   dueDate?: string | null;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
   @IsUUID(undefined, { each: true })
   memberIds?: string[];
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
   @IsUUID(undefined, { each: true })

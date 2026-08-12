@@ -1,6 +1,6 @@
 "use client";
 
-import { ListFilter, X } from "lucide-react";
+import { ListFilter, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,8 +17,8 @@ interface TaskFilterPopoverProps {
 }
 
 export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps) {
-  const { data: members = [] } = useWorkspaceMembers();
-  const { data: labels = [] } = useLabels();
+  const { data: members = [], isLoading: isMembersLoading, isError: isMembersError } = useWorkspaceMembers();
+  const { data: labels = [], isLoading: isLabelsLoading, isError: isLabelsError } = useLabels();
 
   const activeCount =
     filters.statuses.length +
@@ -155,7 +155,16 @@ export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps)
             Members
           </span>
           <div className="mt-1 space-y-0.5">
-            {members.length > 0 ? (
+            {isMembersLoading ? (
+              <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                Loading members...
+              </div>
+            ) : isMembersError ? (
+              <span className="text-[11px] text-destructive px-2 py-1 block">
+                Unable to load members
+              </span>
+            ) : members.length > 0 ? (
               members.map((member) => (
                 <label
                   key={member.id}
@@ -184,7 +193,16 @@ export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps)
             Labels
           </span>
           <div className="mt-1 space-y-0.5">
-            {labels.length > 0 ? (
+            {isLabelsLoading ? (
+              <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                Loading labels...
+              </div>
+            ) : isLabelsError ? (
+              <span className="text-[11px] text-destructive px-2 py-1 block">
+                Unable to load labels
+              </span>
+            ) : labels.length > 0 ? (
               labels.map((label) => (
                 <label
                   key={label.id}
