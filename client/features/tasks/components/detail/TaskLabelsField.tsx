@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Tag, X } from "lucide-react";
+import { Loader2, Tag, X } from "lucide-react";
 import { Task } from "../../types/task.types";
 import { useLabels } from "@/features/labels/hooks/use-labels";
 import { useUpdateTask } from "../../hooks/use-update-task";
@@ -18,12 +18,14 @@ interface TaskLabelsFieldProps {
 }
 
 export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
-  const { data: labels = [] } = useLabels();
+  const { data: labels = [], isLoading, isError } = useLabels();
   const updateTaskMutation = useUpdateTask();
 
   const currentLabelIds = task.labels.map((l) => l.id);
 
   const toggleLabel = (labelId: string) => {
+    if (updateTaskMutation.isPending) return;
+
     const nextLabelIds = currentLabelIds.includes(labelId)
       ? currentLabelIds.filter((id) => id !== labelId)
       : [...currentLabelIds, labelId];
@@ -35,6 +37,8 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
   };
 
   const handleClearAll = () => {
+    if (updateTaskMutation.isPending) return;
+
     updateTaskMutation.mutate({
       id: task.id,
       payload: { labelIds: [] },
@@ -51,6 +55,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
             <Button
               variant="ghost"
               size="sm"
+              disabled={updateTaskMutation.isPending}
               className="h-8 border-none bg-transparent hover:bg-accent/50 rounded-xl px-2 text-xs font-medium w-auto"
             />
           }
@@ -84,6 +89,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearAll}
+                disabled={updateTaskMutation.isPending}
                 className="h-6 px-1 text-[10px] text-muted-foreground hover:text-destructive"
               >
                 <X className="size-3 mr-1" />
@@ -93,7 +99,16 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
           </div>
 
           <div className="mt-1 space-y-0.5 max-h-48 overflow-y-auto">
-            {labels.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                Loading labels...
+              </div>
+            ) : isError ? (
+              <span className="text-[11px] text-destructive px-2 py-1 block">
+                Unable to load labels
+              </span>
+            ) : labels.length > 0 ? (
               labels.map((l) => (
                 <label
                   key={l.id}
@@ -101,6 +116,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                 >
                   <Checkbox
                     checked={currentLabelIds.includes(l.id)}
+                    disabled={updateTaskMutation.isPending}
                     onCheckedChange={() => toggleLabel(l.id)}
                   />
                   <span className="truncate text-xs">{l.name}</span>

@@ -14,7 +14,8 @@ export function useDeleteTask() {
       const token = await getAuthToken();
       return tasksApi.deleteTask(id, token);
     },
-    onSuccess: () => {
+    onSuccess: (_, taskId) => {
+      queryClient.removeQueries({ queryKey: ["task", taskId] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task deleted successfully");
     },

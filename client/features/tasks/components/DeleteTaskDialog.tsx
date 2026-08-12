@@ -16,9 +16,15 @@ interface DeleteTaskDialogProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDeleted?: () => void;
 }
 
-export function DeleteTaskDialog({ task, open, onOpenChange }: DeleteTaskDialogProps) {
+export function DeleteTaskDialog({
+  task,
+  open,
+  onOpenChange,
+  onDeleted,
+}: DeleteTaskDialogProps) {
   const deleteTaskMutation = useDeleteTask();
 
   if (!task) return null;
@@ -27,6 +33,7 @@ export function DeleteTaskDialog({ task, open, onOpenChange }: DeleteTaskDialogP
     deleteTaskMutation.mutate(task.id, {
       onSuccess: () => {
         onOpenChange(false);
+        onDeleted?.();
       },
     });
   };

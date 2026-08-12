@@ -6,6 +6,7 @@ import { AlertCircle, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTask } from "@/features/tasks/hooks/use-task";
 import { TaskDetail } from "@/features/tasks/components/detail/TaskDetail";
+import { ApiError } from "@/lib/api-client";
 
 interface PageProps {
   params: Promise<{ taskId: string }>;
@@ -13,7 +14,7 @@ interface PageProps {
 
 export default function TaskDetailPage({ params }: PageProps) {
   const { taskId } = use(params);
-  const { data: task, isLoading, isError, refetch } = useTask(taskId);
+  const { data: task, isLoading, isError, error, refetch } = useTask(taskId);
 
   if (isLoading) {
     return (
@@ -25,15 +26,24 @@ export default function TaskDetailPage({ params }: PageProps) {
   }
 
   if (isError || !task) {
+    const isNotFound =
+      !task &&
+      error instanceof ApiError &&
+      (error.status === 404 || error.status === 403);
+
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center rounded-2xl border border-dashed border-border/80 bg-card/40 my-8 space-y-4 max-w-md mx-auto">
         <div className="size-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
           <AlertCircle className="size-5" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Task not found</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {isNotFound ? "Task not found" : "Unable to load task"}
+          </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            This task may have been deleted or does not exist in your current workspace.
+            {isNotFound
+              ? "This task may have been deleted or does not exist in your current workspace."
+              : "We couldn't load this task right now. Please check your connection and try again."}
           </p>
         </div>
         <div className="flex items-center gap-2">

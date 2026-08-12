@@ -17,10 +17,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const handleDeleteSuccess = () => {
-    router.replace("/tasks");
-  };
-
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
@@ -44,9 +40,9 @@ export function TaskDetail({ task }: TaskDetailProps) {
       <DeleteTaskDialog
         task={task}
         open={isDeleteDialogOpen}
-        onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open);
-          if (!open) handleDeleteSuccess();
+        onOpenChange={setIsDeleteDialogOpen}
+        onDeleted={() => {
+          router.replace("/tasks");
         }}
       />
     </div>

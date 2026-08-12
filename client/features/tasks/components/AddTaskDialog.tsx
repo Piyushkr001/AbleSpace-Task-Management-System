@@ -33,7 +33,7 @@ export function AddTaskDialog() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<TaskStatus>("TODO");
-  const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
+  const [priority, setPriority] = useState<TaskPriority>("NONE");
   const [dueDate, setDueDate] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export function AddTaskDialog() {
           setTitle("");
           setDescription("");
           setStatus("TODO");
-          setPriority("MEDIUM");
+          setPriority("NONE");
           setDueDate("");
           setOpen(false);
         },

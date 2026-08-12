@@ -287,8 +287,10 @@ export class TasksService {
       where.projectId = query.projectId;
     }
 
-    if (query.parentTaskId) {
+    if (query.parentTaskId !== undefined) {
       where.parentTaskId = query.parentTaskId;
+    } else {
+      where.parentTaskId = null;
     }
 
     const tasks = await this.prisma.task.findMany({
