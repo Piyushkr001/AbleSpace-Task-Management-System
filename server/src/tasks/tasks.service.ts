@@ -287,6 +287,10 @@ export class TasksService {
       where.projectId = query.projectId;
     }
 
+    if (query.parentTaskId) {
+      where.parentTaskId = query.parentTaskId;
+    }
+
     const tasks = await this.prisma.task.findMany({
       where,
       orderBy: { createdAt: "desc" },

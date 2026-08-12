@@ -30,4 +30,8 @@ export class TaskQueryDto {
   @IsOptional()
   @IsUUID()
   projectId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  parentTaskId?: string;
 }

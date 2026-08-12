@@ -20,6 +20,7 @@ export interface TaskQueryParams {
   memberId?: string[];
   labelId?: string[];
   projectId?: string;
+  parentTaskId?: string;
 }
 
 export const tasksApi = {
@@ -43,6 +44,9 @@ export const tasksApi = {
     }
     if (params?.projectId) {
       searchParams.set("projectId", params.projectId);
+    }
+    if (params?.parentTaskId) {
+      searchParams.set("parentTaskId", params.parentTaskId);
     }
 
     const queryString = searchParams.toString();

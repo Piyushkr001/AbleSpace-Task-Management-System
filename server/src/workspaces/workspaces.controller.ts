@@ -15,9 +15,4 @@ export class WorkspacesController {
   async getMembersMe(@CurrentUser() user: CurrentUserData) {
     return this.workspacesService.getWorkspaceMembersForUser(user.id);
   }
-
-  @Get("members")
-  async getMembers(@CurrentUser() user: CurrentUserData) {
-    return this.workspacesService.getWorkspaceMembersForUser(user.id);
-  }
 }

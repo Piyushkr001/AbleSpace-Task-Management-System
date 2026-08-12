@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Calendar, MoreVertical, Edit3, Trash2, Tag } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -29,9 +30,11 @@ export function TaskCard({ task, fields, onEdit, onDelete }: TaskCardProps) {
       {/* Title & Priority Header */}
       <div className="space-y-1.5">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
-            {task.title}
-          </h4>
+          <Link href={`/tasks/${task.id}`} className="min-w-0 flex-1">
+            <h4 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug hover:underline truncate">
+              {task.title}
+            </h4>
+          </Link>
 
           <div className="flex items-center gap-1 shrink-0">
             {fields.priority && (

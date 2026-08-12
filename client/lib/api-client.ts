@@ -16,9 +16,6 @@ export class ApiError extends Error {
 export const axiosInstance = axios.create({
   baseURL: env.API_URL,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 export interface ApiClientOptions extends Omit<AxiosRequestConfig, "url"> {
@@ -30,7 +27,7 @@ export async function apiClient<T>(
   path: string,
   options: ApiClientOptions = {}
 ): Promise<T> {
-  const { token, body, headers, ...axiosOptions } = options;
+  const { token, body, headers, data: directData, ...axiosOptions } = options;
 
   const requestHeaders: Record<string, string> = {
     ...(headers as Record<string, string>),
@@ -40,21 +37,13 @@ export async function apiClient<T>(
     requestHeaders["Authorization"] = `Bearer ${token}`;
   }
 
-  // Support legacy `body` stringified parameter or direct data payload
-  let data = options.data ?? body;
-  if (typeof data === "string") {
-    try {
-      data = JSON.parse(data);
-    } catch {
-      // Keep as string if not JSON
-    }
-  }
+  const payload = directData ?? body;
 
   try {
     const response = await axiosInstance<T>({
       url: path,
       headers: requestHeaders,
-      data,
+      data: payload,
       ...axiosOptions,
     });
     return response.data;

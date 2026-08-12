@@ -15,6 +15,7 @@ import { TaskStatus, TaskPriority } from "@prisma/client";
 
 export class UpdateTaskDto {
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsString()
   @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
   @MinLength(1)
@@ -31,10 +32,12 @@ export class UpdateTaskDto {
   description?: string | null;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
 
@@ -64,12 +67,14 @@ export class UpdateTaskDto {
   dueDate?: string | null;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
   @IsUUID(undefined, { each: true })
   memberIds?: string[];
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
   @IsUUID(undefined, { each: true })
