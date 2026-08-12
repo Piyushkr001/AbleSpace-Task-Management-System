@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { UsersModule } from "../users/users.module";
-import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { GuestAuthGuard } from "./guards/guest-auth.guard";
 import { ClerkAuthGuard } from "./guards/clerk-auth.guard";
 import { UnifiedAuthGuard } from "./guards/unified-auth.guard";
@@ -12,7 +11,6 @@ import { UnifiedAuthGuard } from "./guards/unified-auth.guard";
 @Module({
   imports: [
     UsersModule,
-    WorkspacesModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
