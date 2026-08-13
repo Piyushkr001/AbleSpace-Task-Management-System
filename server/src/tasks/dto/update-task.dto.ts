@@ -3,7 +3,6 @@ import {
   IsArray,
   IsEnum,
   IsISO8601,
-  IsOptional,
   IsString,
   IsUUID,
   MaxLength,
@@ -14,7 +13,6 @@ import { Transform } from "class-transformer";
 import { TaskStatus, TaskPriority } from "@prisma/client";
 
 export class UpdateTaskDto {
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsString()
   @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
@@ -22,7 +20,6 @@ export class UpdateTaskDto {
   @MaxLength(255)
   title?: string;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsString()
   @Transform(({ value }) =>
@@ -31,49 +28,40 @@ export class UpdateTaskDto {
   @MaxLength(2000)
   description?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsUUID()
   projectId?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsUUID()
   reporterId?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsUUID()
   parentTaskId?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsISO8601()
   startDate?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsISO8601()
   dueDate?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
   @IsUUID(undefined, { each: true })
   memberIds?: string[];
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()

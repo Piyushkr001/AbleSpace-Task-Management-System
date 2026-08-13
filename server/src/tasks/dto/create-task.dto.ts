@@ -3,7 +3,6 @@ import {
   IsArray,
   IsEnum,
   IsISO8601,
-  IsOptional,
   IsString,
   IsUUID,
   MaxLength,
@@ -20,7 +19,6 @@ export class CreateTaskDto {
   @MaxLength(255)
   title!: string;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsString()
   @Transform(({ value }) =>
@@ -29,49 +27,40 @@ export class CreateTaskDto {
   @MaxLength(2000)
   description?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsUUID()
   projectId?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsUUID()
   reporterId?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsUUID()
   parentTaskId?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsISO8601()
   startDate?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsISO8601()
   dueDate?: string | null;
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
   @IsUUID(undefined, { each: true })
   memberIds?: string[];
 
-  @IsOptional()
   @ValidateIf((_, v) => v !== undefined)
   @IsArray()
   @ArrayUnique()
