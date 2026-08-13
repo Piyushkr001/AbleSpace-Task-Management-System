@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { cn } from "@/lib/utils";
+import { useAuthCache } from "@/components/auth/AuthCacheBoundary";
 import { authApi } from "@/features/auth/api/auth.api";
 import { ModeToggle } from "./ModeToggle";
 
@@ -41,6 +42,7 @@ function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { clearPrincipal } = useAuthCache();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isSignedIn: isClerkSignedIn } = useUser();
   const clerk = useClerk();
@@ -80,6 +82,7 @@ function Navbar() {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
+      clearPrincipal();
       queryClient.clear();
       setIsGuestSignedIn(false);
       if (mobileMenuOpen) {

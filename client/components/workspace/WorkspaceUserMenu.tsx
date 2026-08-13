@@ -8,6 +8,7 @@ import { LogOut, User as UserIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuthCache } from "@/components/auth/AuthCacheBoundary";
 import { authApi } from "@/features/auth/api/auth.api";
 
 interface LocalUserData {
@@ -21,6 +22,7 @@ export function WorkspaceUserMenu() {
   const { user: clerkUser } = useUser();
   const clerk = useClerk();
   const queryClient = useQueryClient();
+  const { clearPrincipal } = useAuthCache();
 
   const [guestUser, setGuestUser] = useState<LocalUserData | null>(null);
 
@@ -60,6 +62,7 @@ export function WorkspaceUserMenu() {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
+      clearPrincipal();
       queryClient.clear();
       router.replace("/login");
       router.refresh();
