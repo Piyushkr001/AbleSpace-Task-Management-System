@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthCache } from "@/components/auth/AuthCacheBoundary";
 import { authApi } from "@/features/auth/api/auth.api";
 
 interface WorkspaceAuthGateProps {
@@ -15,96 +15,61 @@ interface WorkspaceAuthGateProps {
 export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn, userId: clerkUserId } = useAuth();
-  const queryClient = useQueryClient();
+  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = useAuth();
+  const { principalId, isPrincipalLoaded, refreshPrincipal, clearPrincipalCache } = useAuthCache();
 
-  const [isGuestAuthenticated, setIsGuestAuthenticated] = useState<boolean | null>(null);
   const [hasServerError, setHasServerError] = useState(false);
-  const activePrincipalRef = useRef<string | null>(null);
 
-  const checkPrincipalTransition = useCallback((newPrincipalId: string) => {
-    if (activePrincipalRef.current && activePrincipalRef.current !== newPrincipalId) {
-      queryClient.clear();
-    }
-    activePrincipalRef.current = newPrincipalId;
-  }, [queryClient]);
-
-  useEffect(() => {
-    if (isClerkLoaded && isClerkSignedIn && clerkUserId) {
-      checkPrincipalTransition(`clerk:${clerkUserId}`);
-    }
-  }, [isClerkLoaded, isClerkSignedIn, clerkUserId, checkPrincipalTransition]);
-
-  const checkAuth = () => {
+  const checkAuth = async () => {
     setHasServerError(false);
-
-    if (!isClerkLoaded || isClerkSignedIn) return;
-
-    authApi
-      .getCurrentUser()
-      .then((res) => {
-        if (res?.data?.user) {
-          checkPrincipalTransition(`guest:${res.data.user.id}`);
-          setIsGuestAuthenticated(true);
-        } else {
-          queryClient.clear();
-          activePrincipalRef.current = null;
-          setIsGuestAuthenticated(false);
-          router.replace("/login");
-        }
-      })
-      .catch((err: unknown) => {
-        const status = (err as { status?: number })?.status;
-        if (status === 401) {
-          queryClient.clear();
-          activePrincipalRef.current = null;
-          setIsGuestAuthenticated(false);
-          router.replace("/login");
-        } else {
-          setHasServerError(true);
-        }
-      });
+    try {
+      await refreshPrincipal();
+    } catch {
+      setHasServerError(true);
+    }
   };
 
   useEffect(() => {
     let isMounted = true;
 
-    if (!isClerkLoaded || isClerkSignedIn) return;
+    if (!isClerkLoaded || !isPrincipalLoaded) return;
 
-    authApi
-      .getCurrentUser()
-      .then((res) => {
+    const checkGuestAuth = async () => {
+      if (isClerkSignedIn) {
+        if (isMounted) setHasServerError(false);
+        return;
+      }
+
+      try {
+        const res = await authApi.getCurrentUser();
         if (!isMounted) return;
         if (res?.data?.user) {
-          checkPrincipalTransition(`guest:${res.data.user.id}`);
-          setIsGuestAuthenticated(true);
+          setHasServerError(false);
         } else {
-          queryClient.clear();
-          activePrincipalRef.current = null;
-          setIsGuestAuthenticated(false);
+          clearPrincipalCache();
           router.replace("/login");
         }
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         if (!isMounted) return;
         const status = (err as { status?: number })?.status;
         if (status === 401) {
-          queryClient.clear();
-          activePrincipalRef.current = null;
-          setIsGuestAuthenticated(false);
+          clearPrincipalCache();
           router.replace("/login");
         } else {
           setHasServerError(true);
         }
-      });
+      }
+    };
+
+    checkGuestAuth();
 
     return () => {
       isMounted = false;
     };
-  }, [isClerkLoaded, isClerkSignedIn, router, pathname, queryClient, checkPrincipalTransition]);
+  }, [isClerkLoaded, isClerkSignedIn, isPrincipalLoaded, principalId, pathname, router, clearPrincipalCache]);
 
-  const isAuthenticated = Boolean(isClerkSignedIn || isGuestAuthenticated);
-  const isLoading = !isClerkLoaded || (!isClerkSignedIn && isGuestAuthenticated === null && !hasServerError);
+  const isAuthenticated = Boolean(isClerkSignedIn || principalId);
+  const isLoading = !isClerkLoaded || !isPrincipalLoaded;
 
   if (isLoading) {
     return (
