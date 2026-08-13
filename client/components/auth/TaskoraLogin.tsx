@@ -9,12 +9,14 @@ import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "./GoogleIcon";
+import { useAuthCache } from "@/components/auth/AuthCacheBoundary";
 import { authApi } from "@/features/auth/api/auth.api";
 
 export default function TaskoraLogin() {
   const router = useRouter();
   const { isSignedIn } = useUser();
   const clerk = useClerk();
+  const { establishPrincipal } = useAuthCache();
 
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -32,7 +34,10 @@ export default function TaskoraLogin() {
     setError(null);
 
     try {
-      await authApi.guestLogin();
+      const res = await authApi.guestLogin();
+      if (res?.data?.user?.id) {
+        establishPrincipal(`guest:${res.data.user.id}`);
+      }
       toast.success("Signed in as Guest");
       router.replace("/tasks");
       router.refresh();
