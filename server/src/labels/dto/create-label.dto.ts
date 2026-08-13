@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
 import { Transform } from "class-transformer";
 
 export class CreateLabelDto {
@@ -8,9 +8,9 @@ export class CreateLabelDto {
   @MaxLength(50)
   name!: string;
 
-  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsString()
   @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
   @MaxLength(30)
-  color?: string;
+  color?: string | null;
 }
