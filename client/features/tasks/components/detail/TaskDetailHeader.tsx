@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Edit2, MoreVertical, Trash2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Task } from "../../types/task.types";
 import { useUpdateTask } from "../../hooks/use-update-task";
+import { cn } from "@/lib/utils";
 
 interface TaskDetailHeaderProps {
   task: Task;
@@ -53,15 +54,15 @@ export function TaskDetailHeader({ task, onDeleteClick }: TaskDetailHeaderProps)
     <div className="space-y-3 pb-4 border-b border-border/60">
       {/* Top Bar Navigation & Actions */}
       <div className="flex items-center justify-between gap-2">
-        <Link href="/tasks">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 rounded-xl px-2.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5 mr-1.5" />
-            <span>Back to Tasks</span>
-          </Button>
+        <Link
+          href="/tasks"
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "h-8 rounded-xl px-2.5 text-xs text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <ArrowLeft className="size-3.5 mr-1.5" />
+          <span>Back to Tasks</span>
         </Link>
 
         <DropdownMenu>

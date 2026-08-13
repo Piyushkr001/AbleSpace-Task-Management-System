@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +20,7 @@ export function WorkspaceUserMenu() {
   const router = useRouter();
   const { user: clerkUser } = useUser();
   const clerk = useClerk();
+  const queryClient = useQueryClient();
 
   const [guestUser, setGuestUser] = useState<LocalUserData | null>(null);
 
@@ -58,6 +60,7 @@ export function WorkspaceUserMenu() {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
+      queryClient.clear();
       router.replace("/login");
       router.refresh();
     }

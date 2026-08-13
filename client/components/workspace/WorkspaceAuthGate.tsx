@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authApi } from "@/features/auth/api/auth.api";
@@ -14,10 +15,25 @@ interface WorkspaceAuthGateProps {
 export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = useAuth();
+  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn, userId: clerkUserId } = useAuth();
+  const queryClient = useQueryClient();
 
   const [isGuestAuthenticated, setIsGuestAuthenticated] = useState<boolean | null>(null);
   const [hasServerError, setHasServerError] = useState(false);
+  const activePrincipalRef = useRef<string | null>(null);
+
+  const checkPrincipalTransition = useCallback((newPrincipalId: string) => {
+    if (activePrincipalRef.current && activePrincipalRef.current !== newPrincipalId) {
+      queryClient.clear();
+    }
+    activePrincipalRef.current = newPrincipalId;
+  }, [queryClient]);
+
+  useEffect(() => {
+    if (isClerkLoaded && isClerkSignedIn && clerkUserId) {
+      checkPrincipalTransition(`clerk:${clerkUserId}`);
+    }
+  }, [isClerkLoaded, isClerkSignedIn, clerkUserId, checkPrincipalTransition]);
 
   const checkAuth = () => {
     setHasServerError(false);
@@ -28,8 +44,11 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
       .getCurrentUser()
       .then((res) => {
         if (res?.data?.user) {
+          checkPrincipalTransition(`guest:${res.data.user.id}`);
           setIsGuestAuthenticated(true);
         } else {
+          queryClient.clear();
+          activePrincipalRef.current = null;
           setIsGuestAuthenticated(false);
           router.replace("/login");
         }
@@ -37,6 +56,8 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
       .catch((err: unknown) => {
         const status = (err as { status?: number })?.status;
         if (status === 401) {
+          queryClient.clear();
+          activePrincipalRef.current = null;
           setIsGuestAuthenticated(false);
           router.replace("/login");
         } else {
@@ -55,8 +76,11 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
       .then((res) => {
         if (!isMounted) return;
         if (res?.data?.user) {
+          checkPrincipalTransition(`guest:${res.data.user.id}`);
           setIsGuestAuthenticated(true);
         } else {
+          queryClient.clear();
+          activePrincipalRef.current = null;
           setIsGuestAuthenticated(false);
           router.replace("/login");
         }
@@ -65,6 +89,8 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
         if (!isMounted) return;
         const status = (err as { status?: number })?.status;
         if (status === 401) {
+          queryClient.clear();
+          activePrincipalRef.current = null;
           setIsGuestAuthenticated(false);
           router.replace("/login");
         } else {
@@ -75,7 +101,7 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
     return () => {
       isMounted = false;
     };
-  }, [isClerkLoaded, isClerkSignedIn, router, pathname]);
+  }, [isClerkLoaded, isClerkSignedIn, router, pathname, queryClient, checkPrincipalTransition]);
 
   const isAuthenticated = Boolean(isClerkSignedIn || isGuestAuthenticated);
   const isLoading = !isClerkLoaded || (!isClerkSignedIn && isGuestAuthenticated === null && !hasServerError);

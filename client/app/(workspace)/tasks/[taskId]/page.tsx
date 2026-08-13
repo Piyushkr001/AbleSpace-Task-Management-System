@@ -3,10 +3,11 @@
 import { use } from "react";
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useTask } from "@/features/tasks/hooks/use-task";
 import { TaskDetail } from "@/features/tasks/components/detail/TaskDetail";
 import { ApiError } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ taskId: string }>;
@@ -56,11 +57,15 @@ export default function TaskDetailPage({ params }: PageProps) {
             <RefreshCw className="size-3 mr-1.5" />
             Retry
           </Button>
-          <Link href="/tasks">
-            <Button size="sm" className="h-8 rounded-xl text-xs">
-              <ArrowLeft className="size-3.5 mr-1.5" />
-              Back to Tasks
-            </Button>
+          <Link
+            href="/tasks"
+            className={cn(
+              buttonVariants({ variant: "default", size: "sm" }),
+              "h-8 rounded-xl text-xs"
+            )}
+          >
+            <ArrowLeft className="size-3.5 mr-1.5" />
+            Back to Tasks
           </Link>
         </div>
       </div>

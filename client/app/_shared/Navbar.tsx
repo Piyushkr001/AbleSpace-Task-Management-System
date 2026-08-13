@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, LayoutDashboard, LogOut, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const navLinks = [
 function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isSignedIn: isClerkSignedIn } = useUser();
   const clerk = useClerk();
@@ -78,6 +80,7 @@ function Navbar() {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
+      queryClient.clear();
       setIsGuestSignedIn(false);
       if (mobileMenuOpen) {
         setMobileMenuOpen(false);
