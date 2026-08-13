@@ -6,24 +6,30 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
   ReactNode,
 } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { authApi } from "@/features/auth/api/auth.api";
+import { ApiError } from "@/lib/api-client";
 
-interface AuthCacheContextType {
+export interface AuthCacheContextType {
   principalId: string | null;
   isPrincipalLoaded: boolean;
+  hasServerError: boolean;
+  establishPrincipal: (newPrincipalId: string) => void;
+  clearPrincipal: () => void;
   refreshPrincipal: () => Promise<void>;
-  clearPrincipalCache: () => void;
 }
 
 const AuthCacheContext = createContext<AuthCacheContextType>({
   principalId: null,
   isPrincipalLoaded: false,
+  hasServerError: false,
+  establishPrincipal: () => {},
+  clearPrincipal: () => {},
   refreshPrincipal: async () => {},
-  clearPrincipalCache: () => {},
 });
 
 export const useAuthCache = () => useContext(AuthCacheContext);
@@ -38,49 +44,58 @@ export function AuthCacheBoundary({ children }: AuthCacheBoundaryProps) {
 
   const [principalId, setPrincipalId] = useState<string | null>(null);
   const [isPrincipalLoaded, setIsPrincipalLoaded] = useState(false);
+  const [hasServerError, setHasServerError] = useState(false);
   const activePrincipalRef = useRef<string | null>(null);
 
-  const clearPrincipalCache = () => {
+  const establishPrincipal = useCallback(
+    (newPrincipalId: string) => {
+      if (
+        activePrincipalRef.current !== null &&
+        activePrincipalRef.current !== newPrincipalId
+      ) {
+        queryClient.clear();
+      }
+      activePrincipalRef.current = newPrincipalId;
+      setPrincipalId(newPrincipalId);
+      setIsPrincipalLoaded(true);
+      setHasServerError(false);
+    },
+    [queryClient]
+  );
+
+  const clearPrincipal = useCallback(() => {
     queryClient.clear();
     activePrincipalRef.current = null;
     setPrincipalId(null);
-  };
+    setIsPrincipalLoaded(true);
+    setHasServerError(false);
+  }, [queryClient]);
 
-  const applyPrincipalChange = (newPrincipal: string | null) => {
-    if (
-      activePrincipalRef.current !== null &&
-      activePrincipalRef.current !== newPrincipal
-    ) {
-      queryClient.clear();
-    }
-    activePrincipalRef.current = newPrincipal;
-    setPrincipalId(newPrincipal);
-  };
-
-  const resolvePrincipal = async () => {
+  const refreshPrincipal = useCallback(async () => {
     if (!isClerkLoaded) return;
 
     if (isClerkSignedIn && clerkUserId) {
-      const newPrincipal = `clerk:${clerkUserId}`;
-      applyPrincipalChange(newPrincipal);
-      setIsPrincipalLoaded(true);
+      establishPrincipal(`clerk:${clerkUserId}`);
       return;
     }
 
     try {
       const res = await authApi.getCurrentUser();
       if (res?.data?.user) {
-        const newPrincipal = `guest:${res.data.user.id}`;
-        applyPrincipalChange(newPrincipal);
+        establishPrincipal(`guest:${res.data.user.id}`);
       } else {
-        applyPrincipalChange(null);
+        clearPrincipal();
       }
-    } catch {
-      applyPrincipalChange(null);
-    } finally {
-      setIsPrincipalLoaded(true);
+    } catch (err: unknown) {
+      const status = (err as ApiError)?.status ?? (err as { status?: number })?.status;
+      if (status === 401) {
+        clearPrincipal();
+      } else {
+        setHasServerError(true);
+        setIsPrincipalLoaded(true);
+      }
     }
-  };
+  }, [isClerkLoaded, isClerkSignedIn, clerkUserId, establishPrincipal, clearPrincipal]);
 
   useEffect(() => {
     let isMounted = true;
@@ -100,6 +115,7 @@ export function AuthCacheBoundary({ children }: AuthCacheBoundaryProps) {
         if (isMounted) {
           setPrincipalId(newPrincipal);
           setIsPrincipalLoaded(true);
+          setHasServerError(false);
         }
         return;
       }
@@ -117,20 +133,28 @@ export function AuthCacheBoundary({ children }: AuthCacheBoundaryProps) {
           }
           activePrincipalRef.current = newPrincipal;
           setPrincipalId(newPrincipal);
+          setHasServerError(false);
         } else {
           if (activePrincipalRef.current !== null) {
             queryClient.clear();
           }
           activePrincipalRef.current = null;
           setPrincipalId(null);
+          setHasServerError(false);
         }
-      } catch {
+      } catch (err: unknown) {
         if (!isMounted) return;
-        if (activePrincipalRef.current !== null) {
-          queryClient.clear();
+        const status = (err as ApiError)?.status ?? (err as { status?: number })?.status;
+        if (status === 401) {
+          if (activePrincipalRef.current !== null) {
+            queryClient.clear();
+          }
+          activePrincipalRef.current = null;
+          setPrincipalId(null);
+          setHasServerError(false);
+        } else {
+          setHasServerError(true);
         }
-        activePrincipalRef.current = null;
-        setPrincipalId(null);
       } finally {
         if (isMounted) {
           setIsPrincipalLoaded(true);
@@ -150,8 +174,10 @@ export function AuthCacheBoundary({ children }: AuthCacheBoundaryProps) {
       value={{
         principalId,
         isPrincipalLoaded,
-        refreshPrincipal: resolvePrincipal,
-        clearPrincipalCache,
+        hasServerError,
+        establishPrincipal,
+        clearPrincipal,
+        refreshPrincipal,
       }}
     >
       {children}

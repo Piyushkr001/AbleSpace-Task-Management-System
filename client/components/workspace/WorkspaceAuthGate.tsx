@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthCache } from "@/components/auth/AuthCacheBoundary";
-import { authApi } from "@/features/auth/api/auth.api";
 
 interface WorkspaceAuthGateProps {
   children: ReactNode;
@@ -16,57 +15,15 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = useAuth();
-  const { principalId, isPrincipalLoaded, refreshPrincipal, clearPrincipalCache } = useAuthCache();
-
-  const [hasServerError, setHasServerError] = useState(false);
-
-  const checkAuth = async () => {
-    setHasServerError(false);
-    try {
-      await refreshPrincipal();
-    } catch {
-      setHasServerError(true);
-    }
-  };
+  const { principalId, isPrincipalLoaded, hasServerError, refreshPrincipal } = useAuthCache();
 
   useEffect(() => {
-    let isMounted = true;
-
     if (!isClerkLoaded || !isPrincipalLoaded) return;
 
-    const checkGuestAuth = async () => {
-      if (isClerkSignedIn) {
-        if (isMounted) setHasServerError(false);
-        return;
-      }
-
-      try {
-        const res = await authApi.getCurrentUser();
-        if (!isMounted) return;
-        if (res?.data?.user) {
-          setHasServerError(false);
-        } else {
-          clearPrincipalCache();
-          router.replace("/login");
-        }
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        const status = (err as { status?: number })?.status;
-        if (status === 401) {
-          clearPrincipalCache();
-          router.replace("/login");
-        } else {
-          setHasServerError(true);
-        }
-      }
-    };
-
-    checkGuestAuth();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isClerkLoaded, isClerkSignedIn, isPrincipalLoaded, principalId, pathname, router, clearPrincipalCache]);
+    if (!isClerkSignedIn && !principalId && !hasServerError) {
+      router.replace("/login");
+    }
+  }, [isClerkLoaded, isClerkSignedIn, isPrincipalLoaded, principalId, hasServerError, router, pathname]);
 
   const isAuthenticated = Boolean(isClerkSignedIn || principalId);
   const isLoading = !isClerkLoaded || !isPrincipalLoaded;
@@ -96,7 +53,7 @@ export function WorkspaceAuthGate({ children }: WorkspaceAuthGateProps) {
             </p>
           </div>
           <Button
-            onClick={checkAuth}
+            onClick={() => refreshPrincipal()}
             className="h-9 rounded-xl px-4 text-xs font-medium"
           >
             <RefreshCw className="size-3.5 mr-2" />
