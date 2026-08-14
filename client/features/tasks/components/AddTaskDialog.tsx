@@ -26,7 +26,12 @@ import { TaskStatus, TaskPriority } from "../types/task.types";
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG, ALL_STATUSES, ALL_PRIORITIES } from "../config/task.config";
 import { useCreateTask } from "../hooks/use-create-task";
 
-export function AddTaskDialog() {
+interface AddTaskDialogProps {
+  defaultProjectId?: string;
+  trigger?: React.ReactElement;
+}
+
+export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps = {}) {
   const createTaskMutation = useCreateTask();
 
   const [open, setOpen] = useState(false);
@@ -47,6 +52,7 @@ export function AddTaskDialog() {
         status,
         priority,
         dueDate: dueDate || undefined,
+        projectId: defaultProjectId || undefined,
       },
       {
         onSuccess: () => {
@@ -65,15 +71,19 @@ export function AddTaskDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button
-            size="sm"
-            className="h-9 rounded-xl px-3.5 font-medium shadow-xs bg-primary hover:opacity-90 text-xs"
-          />
+          trigger ? (
+            trigger
+          ) : (
+            <Button
+              size="sm"
+              className="h-9 rounded-xl px-3.5 font-medium shadow-xs bg-primary hover:opacity-90 text-xs"
+            >
+              <Plus className="size-3.5 mr-1.5" />
+              <span>Add Task</span>
+            </Button>
+          )
         }
-      >
-        <Plus className="size-3.5 mr-1.5" />
-        <span>Add Task</span>
-      </DialogTrigger>
+      />
 
       <DialogContent className="sm:max-w-md rounded-2xl p-6">
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -18,6 +18,7 @@ interface TaskToolbarProps {
   onFieldsChange: (fields: FieldVisibility) => void;
   filters: TaskFilters;
   onFiltersChange: (filters: TaskFilters) => void;
+  defaultProjectId?: string;
 }
 
 export function TaskToolbar({
@@ -29,6 +30,7 @@ export function TaskToolbar({
   onFieldsChange,
   filters,
   onFiltersChange,
+  defaultProjectId,
 }: TaskToolbarProps) {
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4">
@@ -53,7 +55,7 @@ export function TaskToolbar({
         <TaskFilterPopover filters={filters} onChange={onFiltersChange} />
 
         {/* Add Task Button */}
-        <AddTaskDialog />
+        <AddTaskDialog defaultProjectId={defaultProjectId} />
       </div>
 
       {/* View Switch (List / Board) */}
