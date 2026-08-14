@@ -19,6 +19,8 @@ export function useUpdateTask() {
     onSuccess: (task) => {
       queryClient.setQueryData(["task", task.id], task);
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       toast.success(`Task "${task.title}" updated successfully`);
     },
     onError: (error: Error) => {

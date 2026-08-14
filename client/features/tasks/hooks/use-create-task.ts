@@ -18,6 +18,8 @@ export function useCreateTask() {
     },
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       toast.success(`Task "${task.title}" created successfully`);
     },
     onError: (error: Error) => {

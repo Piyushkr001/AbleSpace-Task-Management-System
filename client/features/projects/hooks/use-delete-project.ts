@@ -3,26 +3,25 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApiAuth } from "@/hooks/use-api-auth";
 import { toast } from "react-hot-toast";
-import { tasksApi } from "../api/tasks.api";
+import { projectsApi } from "../api/projects.api";
 
-export function useDeleteTask() {
+export function useDeleteProject() {
   const { getAuthToken } = useApiAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
       const token = await getAuthToken();
-      return tasksApi.deleteTask(id, token);
+      return projectsApi.deleteProject(id, token);
     },
-    onSuccess: (_, taskId) => {
-      queryClient.removeQueries({ queryKey: ["task", taskId] });
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    onSuccess: (_, projectId) => {
+      queryClient.removeQueries({ queryKey: ["project", projectId] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["project"] });
-      toast.success("Task deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Project deleted successfully");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete task");
+      toast.error(error.message || "Failed to delete project");
     },
   });
 }
