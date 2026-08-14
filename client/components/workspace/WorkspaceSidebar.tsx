@@ -82,24 +82,19 @@ export function WorkspaceSidebar({ onNavClick }: WorkspaceSidebarProps) {
           onClick={onNavClick}
           aria-current={isProjectsActive ? "page" : undefined}
           className={cn(
-            "group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
+            "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
             isProjectsActive
               ? "bg-accent text-accent-foreground font-semibold shadow-2xs"
               : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
           )}
         >
-          <div className="flex items-center gap-3">
-            <FolderKanban
-              className={cn(
-                "size-4 transition-colors",
-                isProjectsActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-              )}
-            />
-            <span>Projects</span>
-          </div>
-          <span className="rounded-md border border-border/40 bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            Soon
-          </span>
+          <FolderKanban
+            className={cn(
+              "size-4 transition-colors",
+              isProjectsActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+            )}
+          />
+          <span>Projects</span>
         </Link>
       </nav>
 
