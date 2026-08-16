@@ -42,7 +42,32 @@ describe("TasksService", () => {
           createdAt: new Date("2026-08-16T12:00:00Z"),
           updatedAt: new Date("2026-08-16T12:00:00Z"),
         })),
-        findMany: mock(async () => []),
+        findMany: mock(async (args: any) => {
+          if (args.where?.parentTaskId === "task-parent-1") {
+            return [
+              {
+                id: "subtask-1",
+                title: "Subtask 1",
+                description: null,
+                status: TaskStatus.TODO,
+                priority: TaskPriority.NONE,
+                workspaceId: mockWorkspaceId,
+                projectId: null,
+                reporterId: mockUserId,
+                parentTaskId: "task-parent-1",
+                startDate: null,
+                dueDate: null,
+                members: [],
+                labels: [],
+                reporter: null,
+                project: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            ];
+          }
+          return [];
+        }),
         findFirst: mock(async (args: any) => {
           if (args.where?.id === "task-uuid-1" && args.where?.workspaceId === mockWorkspaceId) {
             return {
@@ -113,7 +138,12 @@ describe("TasksService", () => {
         }),
       },
       workspaceMember: {
-        findFirst: mock(async () => null),
+        findFirst: mock(async (args: any) => {
+          if (args.where?.userId === "valid-reporter-id" && args.where?.workspaceId === mockWorkspaceId) {
+            return { userId: "valid-reporter-id", workspaceId: mockWorkspaceId };
+          }
+          return null;
+        }),
         findMany: mock(async (args: any) => {
           if (args.where?.userId?.in?.includes("valid-member-id")) {
             return [{ userId: "valid-member-id" }];
@@ -168,11 +198,29 @@ describe("TasksService", () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it("should reject updating task with startDate after dueDate", async () => {
+    expect(
+      tasksService.updateTask(mockUserId, "task-uuid-1", {
+        startDate: "2026-08-20",
+        dueDate: "2026-08-10",
+      })
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it("should reject project assignment if project does not belong to user's workspace", async () => {
     expect(
       tasksService.createTask(mockUserId, {
         title: "Foreign project task",
         projectId: "foreign-project-id",
+      })
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it("should reject foreign reporter ID outside the active workspace", async () => {
+    expect(
+      tasksService.createTask(mockUserId, {
+        title: "Foreign reporter task",
+        reporterId: "foreign-reporter-id",
       })
     ).rejects.toThrow(BadRequestException);
   });
@@ -205,6 +253,33 @@ describe("TasksService", () => {
     });
 
     expect(res.data.task.project).toBeNull();
+  });
+
+  it("should replace member IDs on update", async () => {
+    const res = await tasksService.updateTask(mockUserId, "task-uuid-1", {
+      memberIds: ["valid-member-id"],
+    });
+
+    expect(res.data.task.id).toBe("task-uuid-1");
+    expect(mockPrisma.taskMember.deleteMany).toHaveBeenCalled();
+  });
+
+  it("should replace label IDs on update", async () => {
+    const res = await tasksService.updateTask(mockUserId, "task-uuid-1", {
+      labelIds: ["valid-label-id"],
+    });
+
+    expect(res.data.task.id).toBe("task-uuid-1");
+    expect(mockPrisma.taskLabel.deleteMany).toHaveBeenCalled();
+  });
+
+  it("should retrieve subtasks when parentTaskId query param is provided", async () => {
+    const res = await tasksService.findAll(mockUserId, {
+      parentTaskId: "task-parent-1",
+    });
+
+    expect(res.data.tasks.length).toBe(1);
+    expect(res.data.tasks[0].id).toBe("subtask-1");
   });
 
   it("should reject foreign member IDs outside the active workspace", async () => {

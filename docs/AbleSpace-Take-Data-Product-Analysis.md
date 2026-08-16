@@ -19,7 +19,7 @@ Click "Take Data" action directly within the student table row
 ```
 
 ```text
-[Insert Screenshot – Caseload with Take Data action]
+[Insert actual screenshot: Caseload with Take Data action]
 ```
 
 Educators do not need to navigate through auxiliary profile pages to initiate goal tracking; the primary entry point is positioned directly within the student row in the Caseload table.
@@ -29,7 +29,7 @@ Educators do not need to navigate through auxiliary profile pages to initiate go
 ## 3. Observed Workflow
 
 ```text
-[Insert Screenshot – Actual Take Data Screen]
+[Insert actual screenshot: Take Data screen]
 ```
 
 ### Step 1: Select Student from Caseload
@@ -48,7 +48,7 @@ Educators do not need to navigate through auxiliary profile pages to initiate go
 - **Observed Result**: Data is saved to the student record, updating cumulative progress tracking.
 
 ```text
-[Insert Screenshot – Next verified workflow state]
+[Insert actual screenshot: next verified workflow step]
 ```
 
 ---
@@ -111,10 +111,10 @@ Based on verified AbleSpace screens, the data-collection surface presents:
 
 | Recommendation | Target Role | Expected Benefit |
 |---|---|---|
-| **Group Session Mode** | Speech & Occupational Therapists | Reduces session management time by ~40% during concurrent group therapy. |
+| **Group Session Mode** | Speech & Occupational Therapists | Reduces the number of navigation transitions required during concurrent group therapy. |
 | **Enlarged Touch Targets** | Resource Teachers & Paraprofessionals | Minimizes mis-taps and allows uninterrupted eye contact with students. |
 | **Instant Undo Snackbar** | All Special Educators | Prevents skewed IEP progress metrics caused by accidental double taps. |
-| **Offline Resilience** | Itinerant Service Providers | Guarantees zero data loss across mobile therapy rooms or low-Wi-Fi facilities. |
+| **Offline Resilience** | Itinerant Service Providers | Reduces the risk of losing uncommitted observations across mobile therapy rooms or low-Wi-Fi facilities. |
 
 ---
 

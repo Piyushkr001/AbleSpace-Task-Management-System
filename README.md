@@ -141,21 +141,28 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
+| `GET` | `/api/health` | Service health check | Public |
 | `POST` | `/api/auth/guest` | Create or reuse guest session (Rate-limited) | Public |
 | `POST` | `/api/auth/sync` | Sync Clerk user with PostgreSQL database | Clerk Bearer |
 | `GET` | `/api/auth/me` | Retrieve authenticated user profile | Guest / Clerk |
 | `POST` | `/api/auth/logout` | Clear guest session cookie | Guest / Clerk |
-| `GET` | `/api/tasks` | List tasks (supports search, filter by status, priority, etc.) | Required |
+| `GET` | `/api/tasks` | List top-level tasks (`parentTaskId = null` by default; pass `?parentTaskId=<id>` for subtasks; supports search & filters) | Required |
 | `POST` | `/api/tasks` | Create a new task | Required |
 | `GET` | `/api/tasks/:id` | Get task details by ID | Required |
 | `PATCH` | `/api/tasks/:id` | Update task properties | Required |
 | `DELETE` | `/api/tasks/:id` | Delete a task | Required |
-| `GET` | `/api/projects` | List workspace projects with task counts | Required |
+| `GET` | `/api/projects` | List workspace projects with top-level task counts | Required |
 | `POST` | `/api/projects` | Create a project | Required |
+| `GET` | `/api/projects/:id` | Get project details by ID | Required |
 | `PATCH` | `/api/projects/:id` | Update project name / description | Required |
-| `DELETE` | `/api/projects/:id` | Delete project (sets task projectId to null) | Required |
+| `DELETE` | `/api/projects/:id` | Delete project (disconnects associated tasks) | Required |
 | `GET` | `/api/labels` | List workspace labels | Required |
 | `POST` | `/api/labels` | Create a custom label with hex color | Required |
+| `PATCH` | `/api/labels/:id` | Update label name / hex color | Required |
+| `DELETE` | `/api/labels/:id` | Delete label | Required |
+| `GET` | `/api/workspaces/me/members` | List members of current workspace | Required |
+
+> **Task Query Behavior Note**: `GET /api/tasks` queries top-level tasks (`parentTaskId: null`) by default so that Kanban and List views render primary work items. Subtasks are fetched deterministically by querying `GET /api/tasks?parentTaskId=<taskId>`.
 
 ---
 

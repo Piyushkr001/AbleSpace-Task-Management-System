@@ -51,6 +51,14 @@ describe("LabelsService", () => {
           }
           return null;
         }),
+        update: mock(async (args: any) => ({
+          id: "label-uuid-1",
+          name: args.data.name ?? "Bug",
+          color: args.data.color ?? "#3b82f6",
+          workspaceId: mockWorkspaceId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
         delete: mock(async () => ({ id: "label-uuid-1" })),
       },
     };
@@ -84,6 +92,23 @@ describe("LabelsService", () => {
     const res = await labelsService.findAll(mockUserId);
     expect(res.data.labels.length).toBe(2);
     expect(res.data.labels[0].name).toBe("Bug");
+  });
+
+  it("should update a label in the workspace", async () => {
+    const res = await labelsService.update(mockUserId, "label-uuid-1", {
+      name: "Bug Fix",
+      color: "#3b82f6",
+    });
+
+    expect(res.data.label.id).toBe("label-uuid-1");
+  });
+
+  it("should reject updating a label from another workspace", async () => {
+    expect(
+      labelsService.update(mockUserId, "foreign-label-id", {
+        name: "Renamed",
+      })
+    ).rejects.toThrow(NotFoundException);
   });
 
   it("should reject deleting label from another workspace", async () => {

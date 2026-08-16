@@ -47,7 +47,13 @@ export class ProjectsService {
       },
       include: {
         _count: {
-          select: { tasks: true },
+          select: {
+            tasks: {
+              where: {
+                parentTaskId: null,
+              },
+            },
+          },
         },
       },
     });
@@ -71,7 +77,13 @@ export class ProjectsService {
       },
       include: {
         _count: {
-          select: { tasks: true },
+          select: {
+            tasks: {
+              where: {
+                parentTaskId: null,
+              },
+            },
+          },
         },
       },
     });
@@ -93,7 +105,13 @@ export class ProjectsService {
       },
       include: {
         _count: {
-          select: { tasks: true },
+          select: {
+            tasks: {
+              where: {
+                parentTaskId: null,
+              },
+            },
+          },
         },
       },
     });
@@ -136,7 +154,13 @@ export class ProjectsService {
       data: updateData,
       include: {
         _count: {
-          select: { tasks: true },
+          select: {
+            tasks: {
+              where: {
+                parentTaskId: null,
+              },
+            },
+          },
         },
       },
     });
