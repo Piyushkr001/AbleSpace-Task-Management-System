@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,11 +43,12 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
   const [dueDate, setDueDate] = useState("");
   const [projectId, setProjectId] = useState<string | null>(defaultProjectId ?? null);
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
       setProjectId(defaultProjectId ?? null);
     }
-  }, [open, defaultProjectId]);
+    setOpen(newOpen);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +78,7 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           trigger ? (
@@ -113,6 +114,7 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
                 placeholder="e.g. Design Landing Page Prototype"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={255}
                 className="h-9 rounded-xl text-xs"
                 required
               />
@@ -127,6 +129,7 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
                 placeholder="Optional task description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                maxLength={2000}
                 className="rounded-xl text-xs min-h-20"
               />
             </div>

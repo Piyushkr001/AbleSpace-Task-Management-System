@@ -52,11 +52,11 @@ describe("TasksService", () => {
               status: TaskStatus.TODO,
               priority: TaskPriority.MEDIUM,
               workspaceId: mockWorkspaceId,
-              projectId: null,
+              projectId: "valid-project-id",
               reporterId: mockUserId,
               parentTaskId: null,
-              startDate: null,
-              dueDate: null,
+              startDate: new Date("2026-08-01"),
+              dueDate: new Date("2026-08-15"),
               members: [],
               labels: [],
               reporter: null,
@@ -64,6 +64,22 @@ describe("TasksService", () => {
               createdAt: new Date(),
               updatedAt: new Date(),
             };
+          }
+          if (args.where?.id === "task-uuid-2" && args.where?.workspaceId === mockWorkspaceId) {
+            return {
+              id: "task-uuid-2",
+              parentTaskId: "task-uuid-3",
+              workspaceId: mockWorkspaceId,
+            };
+          }
+          return null;
+        }),
+        findUnique: mock(async (args: any) => {
+          if (args.where?.id === "task-uuid-2") {
+            return { parentTaskId: "task-uuid-3" };
+          }
+          if (args.where?.id === "task-uuid-3") {
+            return { parentTaskId: "task-uuid-1" };
           }
           return null;
         }),
@@ -75,7 +91,7 @@ describe("TasksService", () => {
           status: args.data.status ?? TaskStatus.DOING,
           priority: args.data.priority ?? TaskPriority.HIGH,
           workspaceId: mockWorkspaceId,
-          projectId: null,
+          projectId: args.data.project?.disconnect ? null : "valid-project-id",
           reporterId: mockUserId,
           parentTaskId: null,
           startDate: null,
@@ -98,10 +114,28 @@ describe("TasksService", () => {
       },
       workspaceMember: {
         findFirst: mock(async () => null),
-        findMany: mock(async () => []),
+        findMany: mock(async (args: any) => {
+          if (args.where?.userId?.in?.includes("valid-member-id")) {
+            return [{ userId: "valid-member-id" }];
+          }
+          return [];
+        }),
       },
       label: {
-        findMany: mock(async () => []),
+        findMany: mock(async (args: any) => {
+          if (args.where?.id?.in?.includes("valid-label-id")) {
+            return [{ id: "valid-label-id" }];
+          }
+          return [];
+        }),
+      },
+      taskMember: {
+        deleteMany: mock(async () => ({ count: 1 })),
+        createMany: mock(async () => ({ count: 1 })),
+      },
+      taskLabel: {
+        deleteMany: mock(async () => ({ count: 1 })),
+        createMany: mock(async () => ({ count: 1 })),
       },
       $transaction: mock(async (callback: any) => callback(mockPrisma)),
     };
@@ -155,5 +189,44 @@ describe("TasksService", () => {
         parentTaskId: "task-uuid-1",
       })
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it("should reject multi-hop cyclical parent relationships (A -> B -> C -> A)", async () => {
+    expect(
+      tasksService.updateTask(mockUserId, "task-uuid-1", {
+        parentTaskId: "task-uuid-2",
+      })
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it("should disconnect project when projectId is set to null", async () => {
+    const res = await tasksService.updateTask(mockUserId, "task-uuid-1", {
+      projectId: null,
+    });
+
+    expect(res.data.task.project).toBeNull();
+  });
+
+  it("should reject foreign member IDs outside the active workspace", async () => {
+    expect(
+      tasksService.createTask(mockUserId, {
+        title: "Task with foreign member",
+        memberIds: ["foreign-user-id"],
+      })
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it("should reject foreign label IDs outside the active workspace", async () => {
+    expect(
+      tasksService.createTask(mockUserId, {
+        title: "Task with foreign label",
+        labelIds: ["foreign-label-id"],
+      })
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it("should successfully delete a task within the workspace", async () => {
+    const res = await tasksService.deleteTask(mockUserId, "task-uuid-1");
+    expect(res.message).toBe("Task deleted successfully");
   });
 });

@@ -1,4 +1,3 @@
-import React from "react";
 
 export function GoogleIcon({ className = "size-4" }: { className?: string }) {
   return (

@@ -30,6 +30,9 @@ async function bootstrap() {
     })
   );
 
+  // Enable Graceful Shutdown Hooks
+  app.enableShutdownHooks();
+
   const port = configService.get<number>("PORT", 5001);
   await app.listen(port);
   console.log(`Taskora backend listening on port ${port} at /api`);

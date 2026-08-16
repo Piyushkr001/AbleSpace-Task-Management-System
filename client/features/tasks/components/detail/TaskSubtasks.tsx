@@ -162,6 +162,7 @@ export function TaskSubtasks({ task }: TaskSubtasksProps) {
             placeholder="Subtask title..."
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
+            maxLength={255}
             className="h-8 text-xs rounded-xl bg-background"
             autoFocus
           />

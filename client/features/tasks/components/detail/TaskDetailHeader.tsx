@@ -106,6 +106,7 @@ export function TaskDetailHeader({ task, onDeleteClick }: TaskDetailHeaderProps)
             <Input
               value={titleValue}
               onChange={(e) => setTitleValue(e.target.value)}
+              maxLength={255}
               className="text-lg font-semibold h-10 rounded-xl flex-1"
               autoFocus
               onKeyDown={(e) => {

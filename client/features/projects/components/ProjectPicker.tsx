@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FolderKanban, Check, ChevronDown, Loader2, X, Plus } from "lucide-react";
+import { FolderKanban, Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,17 +40,6 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
   const [priority, setPriority] = useState<TaskPriority>(task?.priority || "NONE");
   const [dueDate, setDueDate] = useState(task?.dueDate || "");
   const [projectId, setProjectId] = useState<string | null>(task?.project?.id ?? null);
-
-  useEffect(() => {
-    if (open && task) {
-      setTitle(task.title || "");
-      setDescription(task.description || "");
-      setStatus(task.status || "TODO");
-      setPriority(task.priority || "NONE");
-      setDueDate(task.dueDate || "");
-      setProjectId(task.project?.id ?? null);
-    }
-  }, [open, task]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && task) {
@@ -108,6 +97,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                 id="edit-task-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={255}
                 className="h-9 rounded-xl text-xs"
                 required
               />
@@ -122,6 +112,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional task description..."
+                maxLength={2000}
                 className="rounded-xl text-xs min-h-20"
               />
             </div>

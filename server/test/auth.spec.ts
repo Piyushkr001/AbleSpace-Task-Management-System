@@ -123,4 +123,24 @@ describe("AuthService", () => {
       UnauthorizedException
     );
   });
+
+  it("should sync Clerk authenticated user and provision profile", async () => {
+    const result = await authService.syncUser("clerk-123");
+
+    expect(result.data.user.id).toBe("clerk-user-123");
+    expect(result.data.user.isGuest).toBe(false);
+  });
+
+  it("should clear guest session cookie on logout", () => {
+    const clearedCookies: string[] = [];
+    const mockRes = {
+      clearCookie: (name: string) => {
+        clearedCookies.push(name);
+      },
+    } as any;
+
+    const result = authService.clearSession(mockRes);
+    expect(result.message).toBe("Logged out successfully");
+    expect(clearedCookies).toContain("taskora_guest_session");
+  });
 });

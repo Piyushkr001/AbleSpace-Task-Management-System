@@ -16,6 +16,7 @@ export function useDeleteTask() {
     },
     onSuccess: (_, taskId) => {
       queryClient.removeQueries({ queryKey: ["task", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["project"] });

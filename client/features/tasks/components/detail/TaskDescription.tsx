@@ -79,6 +79,7 @@ export function TaskDescription({ task }: TaskDescriptionProps) {
             value={descValue}
             onChange={(e) => setDescValue(e.target.value)}
             placeholder="Add task description..."
+            maxLength={2000}
             className="text-xs rounded-xl min-h-28 bg-background"
           />
 

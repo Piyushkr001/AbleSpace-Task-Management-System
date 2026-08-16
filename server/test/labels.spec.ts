@@ -91,4 +91,9 @@ describe("LabelsService", () => {
       labelsService.delete(mockUserId, "foreign-label-id")
     ).rejects.toThrow(NotFoundException);
   });
+
+  it("should delete label within workspace", async () => {
+    const res = await labelsService.delete(mockUserId, "label-uuid-1");
+    expect(res.message).toBe("Label deleted successfully");
+  });
 });

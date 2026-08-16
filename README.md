@@ -1,23 +1,41 @@
 # Taskora — AbleSpace Task Management System
 
-A modern, production-ready, full-stack Task Management System engineered for high performance, deterministic multi-tenant workspace isolation, and seamless user interaction. Built as part of the **AbleSpace Full Stack Developer Technical Assessment**.
+A production-ready, full-stack Task Management System engineered for high performance, reliable workspace isolation, responsive interactivity, and clear workflow management. Built as part of the **AbleSpace Full Stack Developer Technical Assessment**.
 
 ---
 
 ## 🚀 Overview
 
-Taskora provides teams and individual educators with an intuitive, real-time workspace to manage tasks, plan projects, track statuses through Kanban and List views, organize tasks with custom colored labels, manage subtask hierarchies, and collaborate efficiently.
+Taskora provides teams and educators with an intuitive, responsive workspace to manage tasks, plan projects, track statuses through Kanban Board and List views, organize tasks with custom colored labels, manage subtask hierarchies, and collaborate efficiently.
 
 ### Key Capabilities
 - **Dual Authentication**: Instant passwordless **Guest Login** (with automatic session reuse and secure HttpOnly cookie persistence) alongside **Clerk Google OAuth**.
-- **Interactive Kanban Board & List Views**: Real-time task status tracking (`Backlog`, `To Do`, `In Progress`, `Completed`, `On Hold`).
+- **Interactive Kanban Board & List Views**: Task tracking across 5 core statuses (`Backlog`, `To Do`, `In Progress`, `Completed`, `On Hold`).
 - **Project Workspaces**: Full project lifecycle management, task assignments, and live task count metrics.
-- **Dynamic Colored Labels**: Workspace-isolated labels with custom color swatches and instant inline creation.
+- **Dynamic Colored Labels**: Workspace-isolated labels with custom 6-character hex color swatches and instant inline creation.
 - **Hierarchical Subtasks & Relationships**: Circular dependency prevention, self-parenting guards, and relational cascading.
 - **Advanced Filtering & Search**: Instant debounced search combined with multi-criteria status, priority, assignee, label, and project filtering.
-- **Strict Multi-Tenant Isolation**: Server-side workspace scoping ensuring zero cross-tenant data leakage.
-- **Theme Persistence**: Complete Light / Dark theme support with no theme flashing.
-- **Rate-Limiting & Security**: Throttled public endpoints, DTO validation, and sanitized API responses.
+- **Workspace-Scoped Data Access**: Backend resource operations are scoped to the authenticated workspace to prevent direct cross-workspace resource access through supported APIs.
+- **Theme Persistence**: Complete Light / Dark / System theme support with zero theme flashing.
+- **Rate-Limiting & Security**: Throttled public endpoints, DTO validation with strict transformation/whitelisting, and sanitized API responses.
+
+---
+
+## 🌐 Live Demo & Deployment
+
+- **Live Application Frontend**: `https://your-production-app.vercel.app` *(Replace with deployed URL)*
+- **Live Backend API**: `https://your-production-api.onrender.com/api` *(Replace with deployed URL)*
+
+---
+
+## 📸 Screenshots
+
+```text
+[Insert Screenshot – Kanban Board View with Backlog and Columns]
+[Insert Screenshot – Task List View with Filters]
+[Insert Screenshot – Task Detail View with Subtasks and Labels]
+[Insert Screenshot – Projects Overview and Detail View]
+```
 
 ---
 
@@ -28,7 +46,7 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 │                   Next.js 16 (App Router)              │
 │       Tailwind CSS + Shadcn UI + TanStack Query v5     │
 └───────────────────────────┬────────────────────────────┘
-                            │ (REST API via Axios)
+                            │ (REST API via Axios / Fetch)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │                      NestJS 11                         │
@@ -42,6 +60,9 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 │        (Workspaces, Users, Projects, Tasks, Labels)    │
 └────────────────────────────────────────────────────────┘
 ```
+
+### Workspace Tenancy Model
+Taskora provisions and operates on **one workspace per authenticated principal**. All queries and mutations (tasks, projects, labels, members) strictly enforce workspace boundaries on the server side using the resolved workspace ID of the requesting user.
 
 ---
 
@@ -62,7 +83,7 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 - **Database & ORM**: PostgreSQL + Prisma ORM 6
 - **Security & Rate Limiting**: `@nestjs/throttler`, `@nestjs/jwt`, `cookie-parser`
 - **Validation**: `class-validator` + `class-transformer`
-- **Testing**: Bun Test suite for high-value unit & integration testing
+- **Testing**: Bun Test suite for focused backend service unit tests
 
 ---
 
@@ -72,7 +93,7 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 .
 ├── client/                     # Next.js Frontend Application
 │   ├── app/                    # App Router routes ((auth), (workspace), etc.)
-│   ├── components/             # Reusable UI components & Auth boundaries
+│   ├── components/             # Reusable UI components, Auth boundaries, theme
 │   ├── features/
 │   │   ├── auth/               # Auth API, components, and state
 │   │   ├── labels/             # Label management, LabelBadge, and hooks
@@ -87,12 +108,12 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 │   ├── src/
 │   │   ├── auth/               # Dual auth service, guards, controllers
 │   │   ├── config/             # Environment validation and configuration
-│   │   ├── labels/             # Labels controller and service
-│   │   ├── projects/           # Projects controller and service
+│   │   ├── labels/             # Labels controller, service, DTOs
+│   │   ├── projects/           # Projects controller, service, DTOs
 │   │   ├── tasks/              # Tasks controller, service, DTOs
 │   │   ├── users/              # User management and guest transactions
 │   │   └── workspaces/         # Workspace boundary resolution
-│   └── test/                   # Automated unit test suite (Bun test)
+│   └── test/                   # Focused backend service unit tests (Bun test)
 │
 └── docs/                       # Product understanding & technical documentation
     └── AbleSpace-Take-Data-Product-Analysis.md
@@ -103,15 +124,16 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 ## 🗄️ Database Schema & Entities
 
 - **User**: Represents guest users (`isGuest: true`) or Clerk-authenticated users with profile metadata.
-- **Workspace**: Root tenancy boundary. Every resource (Task, Project, Label, Member) strictly belongs to a Workspace.
+- **Workspace**: Root tenancy boundary. Every resource (Task, Project, Label, Member) belongs to a Workspace.
 - **WorkspaceMember**: Connects Users to Workspaces with roles (`OWNER`, `MEMBER`).
-- **Project**: Groups related tasks within a workspace and computes total task counts.
-- **Task**: Main entity supporting:
-  - `title`, `description`, `status` (`BACKLOG`, `TODO`, `DOING`, `COMPLETED`, `ON_HOLD`)
+- **Project**: Groups related tasks within a workspace and calculates task counts.
+- **Task**: Core entity supporting:
+  - `title` (max 255 chars), `description` (max 2000 chars)
+  - `status` (`BACKLOG`, `TODO`, `DOING`, `COMPLETED`, `ON_HOLD`)
   - `priority` (`NONE`, `URGENT`, `HIGH`, `MEDIUM`, `LOW`)
   - `startDate`, `dueDate` (with `startDate <= dueDate` validation)
   - `projectId`, `reporterId`, `parentTaskId` (with circular dependency prevention)
-- **Label**: Custom tags with name and hex `color` assigned to tasks via `TaskLabel`.
+- **Label**: Custom tags with name and 6-character hex `color` assigned to tasks via `TaskLabel`.
 
 ---
 
@@ -133,11 +155,44 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 | `PATCH` | `/api/projects/:id` | Update project name / description | Required |
 | `DELETE` | `/api/projects/:id` | Delete project (sets task projectId to null) | Required |
 | `GET` | `/api/labels` | List workspace labels | Required |
-| `POST` | `/api/labels` | Create a custom label with color | Required |
+| `POST` | `/api/labels` | Create a custom label with hex color | Required |
 
 ---
 
-## ⚙️ Local Development Setup
+## 🔐 Authentication & Guest Login Flow
+
+1. **Guest Login**: When a user clicks *"Continue as Guest"*, the backend creates (or safely reuses an unexpired) guest account and provisions a default workspace. It signs a JWT and sets an `HttpOnly`, `SameSite=Lax` (or `None` for cross-origin HTTPS production) cookie.
+2. **Clerk Authentication**: When signed in via Clerk, the frontend sends the Clerk Bearer token in the `Authorization` header. The backend verifies the token and synchronizes the user profile.
+3. **Unified Guard**: `UnifiedAuthGuard` transparently handles both authentication schemes, ensuring seamless access across API routes.
+
+---
+
+## ⚙️ Environment Variables
+
+### Backend (`server/.env`)
+```env
+PORT=5001
+NODE_ENV=development
+DATABASE_URL="postgresql://user:password@localhost:5432/taskora?schema=public"
+CLIENT_URL="http://localhost:3000"
+JWT_SECRET="your-jwt-secret-at-least-32-chars-long"
+JWT_EXPIRES_IN="7d"
+COOKIE_NAME="taskora_guest_session"
+CLERK_SECRET_KEY="sk_test_..."
+```
+
+### Frontend (`client/.env.local`)
+```env
+NEXT_PUBLIC_API_URL="http://localhost:5001/api"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/login"
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL="/tasks"
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL="/tasks"
+```
+
+---
+
+## 🛠️ Local Development Setup
 
 ### Prerequisites
 - [Bun](https://bun.sh) (v1.1+) or Node.js (v20+)
@@ -149,17 +204,17 @@ Taskora provides teams and individual educators with an intuitive, real-time wor
 cd server
 bun install
 
-# Configure environment variables (create .env from .env.example)
+# Configure environment variables
 cp .env.example .env
 
 # Generate Prisma Client & Run Migrations
 bun run prisma:generate
 bun run prisma:migrate
 
-# Run automated tests
+# Run tests
 bun test
 
-# Start backend development server (Port 5001)
+# Start development server
 bun run start:dev
 ```
 
@@ -169,40 +224,97 @@ bun run start:dev
 cd client
 bun install
 
-# Configure environment variables (create .env.local from .env.example)
+# Configure environment variables
 cp .env.example .env.local
 
-# Start Next.js development server (Port 3000)
+# Start Next.js development server
 bun dev
 ```
 
-Visit **`http://localhost:3000`** in your browser to interact with Taskora.
+Visit **`http://localhost:3000`** in your browser.
 
 ---
 
-## 🧪 Testing
+## 🗃️ Database Setup & Prisma Commands
 
-The backend includes automated tests covering:
-- **Authentication**: Guest session creation, session token reuse, user retrieval, unauthorized guards.
-- **Task Management**: Workspace isolation, valid date ranges, parent cycle prevention, status/priority mutations.
-- **Projects**: Workspace-scoped CRUD, task count calculations, cascade safety.
-- **Labels**: Unique label constraints per workspace, alphabetical sorting, color assignment.
+- **Development Migration**:
+  ```bash
+  bun run prisma:migrate
+  # (Executes prisma migrate dev)
+  ```
+- **Production Migration**:
+  ```bash
+  bun run prisma:migrate:deploy
+  # (Executes prisma migrate deploy)
+  ```
+- **Generate Client**:
+  ```bash
+  bun run prisma:generate
+  # (Executes prisma generate)
+  ```
+- **Prisma Studio**:
+  ```bash
+  bun run prisma:studio
+  # (Opens Prisma Studio at http://localhost:5555)
+  ```
 
-To run the test suite:
+---
+
+## 🧪 Running Tests
+
+The backend includes focused backend service unit tests covering:
+- **Authentication**: Guest session creation, token reuse, profile retrieval, unauthorized guards.
+- **Task Management**: Workspace scoping, date validity (`startDate <= dueDate`), parent multi-hop cycle prevention, self-parenting guards, and relational clearing (`projectId: null`).
+- **Projects**: Workspace-scoped CRUD, task count aggregations, cascade detachment.
+- **Labels**: Unique label constraints, alphabetical sorting, 6-character hex color format validation.
+
 ```bash
-cd server && bun test
+cd server
+bun test
 ```
 
 ---
 
-## 🎨 Theme & Responsiveness
+## 🎨 Theme Support & Responsive Design
 
-- **Persistent Theming**: Supports Light, Dark, and System modes stored in `localStorage` without flash of unstyled content.
-- **Responsive Layout**: Validated from 375px (iPhone SE) to 1920px (Desktop Display) with smooth horizontal Kanban scrolling, responsive dialogs, and mobile drawers.
+- **Persistent Theming**: Full Light, Dark, and System mode support stored in `localStorage` without layout shifts or flashing.
+- **Responsive Layout**: Tested across mobile (375px–430px), tablet (768px–1024px), and desktop (1280px–1920px) viewports with horizontal Kanban board scrolling and responsive modal dialogs.
+
+---
+
+## 🚀 Production Deployment & Database Migrations
+
+### Backend Deployment (e.g. Render / Railway / Fly.io)
+1. Build Command: `bun run build` (which runs `prisma generate && nest build`).
+2. Release Command / Pre-deploy: `bun run prisma:migrate:deploy`.
+3. Start Command: `bun run start:prod` (or `node dist/main`).
+4. Ensure `NODE_ENV=production`, `CLIENT_URL` matches your frontend domain, and database URL is securely provided.
+
+### Frontend Deployment (e.g. Vercel)
+1. Framework Preset: Next.js.
+2. Build Command: `next build`.
+3. Set environment variables: `NEXT_PUBLIC_API_URL` pointing to the production backend API endpoint and Clerk keys.
+
+---
+
+## 📐 Figma Deviations
+
+```text
+No intentional major deviations from the supplied Figma reference are currently known.
+The implementation follows the supplied navigation structure, Kanban column states, task card metadata layout, project detail cards, and theme specifications.
+```
+
+---
+
+## ⚠️ Known Limitations
+
+- **Board Column Ordering**: Tasks in Kanban board columns are ordered by creation timestamp; manual drag-and-drop ordering is not implemented as it was not required in the verified design.
+- **Single Active Workspace**: Taskora currently provisions and operates on one workspace per authenticated principal; UI workspace switching is not exposed.
+- **Label Editing**: Labels are created inline and assigned/removed from tasks; full label color/name updating is exposed via API but not in a dedicated standalone settings page.
 
 ---
 
 ## 📄 Part 2: Product Understanding Analysis
 
-For Part 2 of the assessment focusing on the AbleSpace **"Take Data"** IEP workflow and UX optimization recommendations, please refer to the dedicated analysis:
+For Part 2 of the assessment focusing on the AbleSpace **"Take Data"** IEP workflow, please refer to:
 👉 [**AbleSpace Take Data Product Analysis**](docs/AbleSpace-Take-Data-Product-Analysis.md)

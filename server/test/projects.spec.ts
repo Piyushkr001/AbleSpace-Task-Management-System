@@ -96,4 +96,19 @@ describe("ProjectsService", () => {
       projectsService.findOne(mockUserId, "foreign-project-id")
     ).rejects.toThrow(NotFoundException);
   });
+
+  it("should update project name and description", async () => {
+    const res = await projectsService.updateProject(mockUserId, "project-uuid-1", {
+      name: "Updated Assessment Project",
+      description: "Updated description",
+    });
+
+    expect(res.data.project.id).toBe("project-uuid-1");
+    expect(res.data.project.name).toBe("Updated Assessment Project");
+  });
+
+  it("should delete project within workspace", async () => {
+    const res = await projectsService.deleteProject(mockUserId, "project-uuid-1");
+    expect(res.message).toBe("Project deleted successfully");
+  });
 });
