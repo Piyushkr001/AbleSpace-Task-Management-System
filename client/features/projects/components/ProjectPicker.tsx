@@ -100,7 +100,7 @@ export function ProjectPicker({
           {selectedProject ? (
             <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
               <FolderKanban className="size-3.5 text-primary" />
-              <span className="truncate max-w-[140px]">{selectedProject.name}</span>
+              <span className="truncate max-w-35">{selectedProject.name}</span>
             </div>
           ) : (
             <span className="text-xs text-muted-foreground flex items-center">
