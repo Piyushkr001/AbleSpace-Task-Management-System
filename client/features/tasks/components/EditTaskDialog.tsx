@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,7 @@ import {
 import { Task, TaskStatus, TaskPriority } from "../types/task.types";
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG, ALL_STATUSES, ALL_PRIORITIES } from "../config/task.config";
 import { useUpdateTask } from "../hooks/use-update-task";
+import { ProjectPicker } from "@/features/projects/components/ProjectPicker";
 
 interface EditTaskDialogProps {
   task: Task | null;
@@ -38,6 +39,18 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
   const [status, setStatus] = useState<TaskStatus>(task?.status || "TODO");
   const [priority, setPriority] = useState<TaskPriority>(task?.priority || "NONE");
   const [dueDate, setDueDate] = useState(task?.dueDate || "");
+  const [projectId, setProjectId] = useState<string | null>(task?.project?.id ?? null);
+
+  useEffect(() => {
+    if (open && task) {
+      setTitle(task.title || "");
+      setDescription(task.description || "");
+      setStatus(task.status || "TODO");
+      setPriority(task.priority || "NONE");
+      setDueDate(task.dueDate || "");
+      setProjectId(task.project?.id ?? null);
+    }
+  }, [open, task]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && task) {
@@ -46,6 +59,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
       setStatus(task.status || "TODO");
       setPriority(task.priority || "NONE");
       setDueDate(task.dueDate || "");
+      setProjectId(task.project?.id ?? null);
     }
     onOpenChange(newOpen);
   };
@@ -63,6 +77,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
           status,
           priority,
           dueDate: dueDate || null,
+          projectId: projectId ?? null,
         },
       },
       {
@@ -147,6 +162,17 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-medium text-foreground">
+                Project
+              </Label>
+              <ProjectPicker
+                value={projectId}
+                onChange={setProjectId}
+                variant="select"
+              />
             </div>
 
             <div className="space-y-1">

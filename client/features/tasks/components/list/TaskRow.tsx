@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Task, FieldVisibility } from "../../types/task.types";
 import { TASK_PRIORITY_CONFIG } from "../../config/task.config";
+import { LabelBadge } from "@/features/labels/components/LabelBadge";
 import { cn } from "@/lib/utils";
 
 interface TaskRowProps {
@@ -81,14 +82,12 @@ export function TaskRow({ task, fields, onEdit, onDelete }: TaskRowProps) {
         {fields.labels && task.labels && task.labels.length > 0 && (
           <div className="flex items-center gap-1">
             {task.labels.map((label) => (
-              <Badge
+              <LabelBadge
                 key={label.id}
-                variant="secondary"
-                className="h-5 rounded-md px-1.5 text-[10px] font-normal bg-muted text-muted-foreground"
-              >
-                <Tag className="size-2.5 mr-1" />
-                {label.name}
-              </Badge>
+                name={label.name}
+                color={label.color}
+                className="h-5 text-[10px] px-1.5"
+              />
             ))}
           </div>
         )}

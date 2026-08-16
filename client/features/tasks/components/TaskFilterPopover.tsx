@@ -206,13 +206,21 @@ export function TaskFilterPopover({ filters, onChange }: TaskFilterPopoverProps)
               labels.map((label) => (
                 <label
                   key={label.id}
-                  className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent text-xs cursor-pointer select-none"
+                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 hover:bg-accent text-xs cursor-pointer select-none"
                 >
-                  <Checkbox
-                    checked={filters.labelIds.includes(label.id)}
-                    onCheckedChange={() => toggleLabel(label.id)}
-                  />
-                  <span className="truncate">{label.name}</span>
+                  <div className="flex items-center gap-2 truncate">
+                    <Checkbox
+                      checked={filters.labelIds.includes(label.id)}
+                      onCheckedChange={() => toggleLabel(label.id)}
+                    />
+                    <span className="truncate">{label.name}</span>
+                  </div>
+                  {label.color && (
+                    <span
+                      className="size-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: label.color }}
+                    />
+                  )}
                 </label>
               ))
             ) : (

@@ -52,8 +52,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
   const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false);
 
-  // View state: list vs board (?view=list|board)
-  const currentView = (searchParams.get("view") as "list" | "board") || "list";
+  // View state: list vs board (?view=list|board) with strict validation
+  const currentView: "list" | "board" = searchParams.get("view") === "board" ? "board" : "list";
 
   const handleViewChange = (view: "list" | "board") => {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -206,9 +206,16 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 <h1 className="text-xl font-bold tracking-tight text-foreground truncate">
                   {project.name}
                 </h1>
-                <Badge variant="secondary" className="h-5 rounded-md px-2 text-[10px] font-medium">
-                  {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary" className="h-5 rounded-md px-2 text-[10px] font-medium">
+                    {project.taskCount} {project.taskCount === 1 ? "task" : "tasks"}
+                  </Badge>
+                  {hasActiveFilters && (
+                    <Badge variant="outline" className="h-5 rounded-md px-2 text-[10px] font-medium text-muted-foreground border-border/70">
+                      Showing {tasks.length} after filters
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               {project.description && (

@@ -20,6 +20,7 @@ export function useUpdateProject() {
       queryClient.setQueryData(["project", project.id], project);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task"] });
       toast.success(`Project "${project.name}" updated successfully`);
     },
     onError: (error: Error) => {

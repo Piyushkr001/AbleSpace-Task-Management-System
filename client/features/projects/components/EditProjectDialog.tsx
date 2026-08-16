@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FolderEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,13 @@ export function EditProjectDialog({
   const [name, setName] = useState(project?.name || "");
   const [description, setDescription] = useState(project?.description || "");
   const updateProjectMutation = useUpdateProject();
+
+  useEffect(() => {
+    if (open && project) {
+      setName(project.name);
+      setDescription(project.description || "");
+    }
+  }, [open, project]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && project) {

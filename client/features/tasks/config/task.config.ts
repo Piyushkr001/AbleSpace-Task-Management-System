@@ -13,13 +13,18 @@ export interface PriorityConfigItem {
 }
 
 export const TASK_STATUS_CONFIG: Record<TaskStatus, StatusConfigItem> = {
+  BACKLOG: {
+    label: "Backlog",
+    badgeStyle: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    dotColor: "bg-purple-500",
+  },
   TODO: {
     label: "To Do",
     badgeStyle: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
     dotColor: "bg-slate-500",
   },
   DOING: {
-    label: "Doing",
+    label: "In Progress",
     badgeStyle: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
     dotColor: "bg-blue-500",
   },
@@ -32,11 +37,6 @@ export const TASK_STATUS_CONFIG: Record<TaskStatus, StatusConfigItem> = {
     label: "On Hold",
     badgeStyle: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     dotColor: "bg-amber-500",
-  },
-  BACKLOG: {
-    label: "Backlog",
-    badgeStyle: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-    dotColor: "bg-purple-500",
   },
 };
 
@@ -68,6 +68,6 @@ export const TASK_PRIORITY_CONFIG: Record<TaskPriority, PriorityConfigItem> = {
   },
 };
 
-export const ALL_STATUSES: TaskStatus[] = ["TODO", "DOING", "COMPLETED", "ON_HOLD", "BACKLOG"];
-export const BOARD_STATUSES: TaskStatus[] = ["TODO", "DOING", "COMPLETED", "ON_HOLD"];
+export const ALL_STATUSES: TaskStatus[] = ["BACKLOG", "TODO", "DOING", "COMPLETED", "ON_HOLD"];
+export const BOARD_STATUSES: TaskStatus[] = ["BACKLOG", "TODO", "DOING", "COMPLETED", "ON_HOLD"];
 export const ALL_PRIORITIES: TaskPriority[] = ["URGENT", "HIGH", "MEDIUM", "LOW", "NONE"];

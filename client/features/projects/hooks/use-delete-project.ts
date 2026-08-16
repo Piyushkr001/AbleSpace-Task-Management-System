@@ -18,6 +18,7 @@ export function useDeleteProject() {
       queryClient.removeQueries({ queryKey: ["project", projectId] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task"] });
       toast.success("Project deleted successfully");
     },
     onError: (error: Error) => {

@@ -4,11 +4,14 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
-import { Response } from "express";
+import { Request, Response } from "express";
+import { Throttle } from "@nestjs/throttler";
+import { ConfigService } from "@nestjs/config";
 import { AuthService } from "./auth.service";
 import { UnifiedAuthGuard } from "./guards/unified-auth.guard";
 import { ClerkAuthGuard } from "./guards/clerk-auth.guard";
@@ -19,12 +22,21 @@ import {
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Post("guest")
   @HttpCode(HttpStatus.OK)
-  async guestLogin(@Res({ passthrough: true }) res: Response) {
-    return this.authService.createGuestSession(res);
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  async guestLogin(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
+    const existingToken = req.cookies?.[cookieName];
+    return this.authService.createGuestSession(res, existingToken);
   }
 
   @Post("sync")

@@ -7,13 +7,27 @@ import { TaskMembersField } from "./TaskMembersField";
 import { TaskDatesField } from "./TaskDatesField";
 import { TaskLabelsField } from "./TaskLabelsField";
 import { TaskReporterField } from "./TaskReporterField";
-import { FolderKanban } from "lucide-react";
+import { ProjectPicker } from "@/features/projects/components/ProjectPicker";
+import { useUpdateTask } from "../../hooks/use-update-task";
 
 interface TaskPropertiesProps {
   task: Task;
 }
 
 export function TaskProperties({ task }: TaskPropertiesProps) {
+  const updateTaskMutation = useUpdateTask();
+
+  const handleProjectChange = (projectId: string | null) => {
+    if (updateTaskMutation.isPending) return;
+
+    updateTaskMutation.mutate({
+      id: task.id,
+      payload: {
+        projectId: projectId ?? null,
+      },
+    });
+  };
+
   return (
     <div className="rounded-2xl border border-border/50 bg-card/60 p-4 space-y-2">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pb-1">
@@ -27,17 +41,16 @@ export function TaskProperties({ task }: TaskPropertiesProps) {
       <TaskLabelsField task={task} />
       <TaskReporterField task={task} />
 
-      {/* Project Field (Read-only if project exists) */}
-      <div className="flex items-center justify-between gap-2 py-1.5">
+      {/* Project Field */}
+      <div className="flex items-center justify-between gap-2 py-1.5 border-b border-border/40">
         <span className="text-xs font-medium text-muted-foreground">Project</span>
-        {task.project ? (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-            <FolderKanban className="size-3.5 text-primary" />
-            <span>{task.project.name}</span>
-          </div>
-        ) : (
-          <span className="text-xs text-muted-foreground">—</span>
-        )}
+        <ProjectPicker
+          value={task.project?.id ?? null}
+          onChange={handleProjectChange}
+          disabled={updateTaskMutation.isPending}
+          variant="popover"
+          placeholder="No project"
+        />
       </div>
     </div>
   );

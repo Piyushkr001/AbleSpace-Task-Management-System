@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
 import { TaskStatus, TaskPriority } from "../types/task.types";
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG, ALL_STATUSES, ALL_PRIORITIES } from "../config/task.config";
 import { useCreateTask } from "../hooks/use-create-task";
+import { ProjectPicker } from "@/features/projects/components/ProjectPicker";
 
 interface AddTaskDialogProps {
   defaultProjectId?: string;
@@ -40,6 +41,13 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
   const [status, setStatus] = useState<TaskStatus>("TODO");
   const [priority, setPriority] = useState<TaskPriority>("NONE");
   const [dueDate, setDueDate] = useState("");
+  const [projectId, setProjectId] = useState<string | null>(defaultProjectId ?? null);
+
+  useEffect(() => {
+    if (open) {
+      setProjectId(defaultProjectId ?? null);
+    }
+  }, [open, defaultProjectId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +60,7 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
         status,
         priority,
         dueDate: dueDate || undefined,
-        projectId: defaultProjectId || undefined,
+        projectId: projectId || undefined,
       },
       {
         onSuccess: () => {
@@ -61,6 +69,7 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
           setStatus("TODO");
           setPriority("NONE");
           setDueDate("");
+          setProjectId(defaultProjectId ?? null);
           setOpen(false);
         },
       }
@@ -158,6 +167,17 @@ export function AddTaskDialog({ defaultProjectId, trigger }: AddTaskDialogProps 
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-medium text-foreground">
+                Project
+              </Label>
+              <ProjectPicker
+                value={projectId}
+                onChange={setProjectId}
+                variant="select"
+              />
             </div>
 
             <div className="space-y-1">

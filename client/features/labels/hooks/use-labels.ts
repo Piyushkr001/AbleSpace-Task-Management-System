@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import { useApiAuth } from "@/hooks/use-api-auth";
 import { labelsApi, CreateLabelPayload } from "../api/labels.api";
 
@@ -28,8 +29,14 @@ export function useCreateLabel() {
       const res = await labelsApi.createLabel(payload, token);
       return res.data.label;
     },
-    onSuccess: () => {
+    onSuccess: (label) => {
       queryClient.invalidateQueries({ queryKey: ["labels"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+      toast.success(`Label "${label.name}" created successfully`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to create label");
     },
   });
 }

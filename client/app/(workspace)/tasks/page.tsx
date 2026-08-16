@@ -16,8 +16,8 @@ function TasksContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // URL state for List vs Board view (?view=list|board)
-  const currentView = (searchParams.get("view") as "list" | "board") || "list";
+  // URL state for List vs Board view (?view=list|board) with strict validation
+  const currentView: "list" | "board" = searchParams.get("view") === "board" ? "board" : "list";
 
   const handleViewChange = (view: "list" | "board") => {
     const params = new URLSearchParams(searchParams.toString());

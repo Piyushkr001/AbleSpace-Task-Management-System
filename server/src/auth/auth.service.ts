@@ -13,7 +13,43 @@ export class AuthService {
     private readonly configService: ConfigService
   ) {}
 
-  async createGuestSession(res: Response) {
+  async createGuestSession(res: Response, existingToken?: string) {
+    const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
+    const isProd =
+      this.configService.get<string>("NODE_ENV") === "production";
+    const jwtExpiresIn =
+      this.configService.get<string>("JWT_EXPIRES_IN") || "7d";
+    const cookieMaxAge = parseDurationToMs(jwtExpiresIn);
+
+    // Reuse existing valid guest session if already authenticated
+    if (existingToken) {
+      try {
+        const decoded = await this.jwtService.verifyAsync<{
+          sub: string;
+          type?: string;
+        }>(existingToken);
+
+        if (decoded?.sub) {
+          const existingUser = await this.usersService.findById(decoded.sub);
+          if (existingUser && existingUser.isGuest) {
+            return {
+              data: {
+                user: {
+                  id: existingUser.id,
+                  fullName: existingUser.fullName || "Guest",
+                  email: null,
+                  avatarUrl: null,
+                  isGuest: true,
+                },
+              },
+            };
+          }
+        }
+      } catch {
+        // Stale or expired token; fall through to create a new session
+      }
+    }
+
     // 1. Transactionally create Guest User, Workspace, and WorkspaceMember OWNER
     const user = await this.usersService.createGuestUserTx();
 
@@ -26,13 +62,6 @@ export class AuthService {
     const token = await this.jwtService.signAsync(payload);
 
     // 3. Set HttpOnly Cookie synchronized with JWT TTL
-    const cookieName = this.configService.getOrThrow<string>("COOKIE_NAME");
-    const isProd =
-      this.configService.get<string>("NODE_ENV") === "production";
-    const jwtExpiresIn =
-      this.configService.get<string>("JWT_EXPIRES_IN") || "7d";
-    const cookieMaxAge = parseDurationToMs(jwtExpiresIn);
-
     res.cookie(cookieName, token, {
       httpOnly: true,
       secure: isProd,
