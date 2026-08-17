@@ -22,7 +22,7 @@ Click "Take Data" action directly within the student table row
 [MANUAL ACTION REQUIRED — INSERT ACTUAL ABLESPACE SCREENSHOT: Caseload table showing Take Data action]
 ```
 
-The supplied assessment screenshot establishes the Caseload entry point. Educators do not need to navigate through auxiliary profile pages to initiate goal tracking; the primary entry point is positioned directly within the student row in the Caseload table.
+The supplied assessment establishes Take Data as a row-level action within the Caseload table. Educators do not need to navigate through auxiliary profile pages to initiate goal tracking; the primary entry point is positioned directly within the student row in the Caseload table.
 
 ---
 
@@ -35,7 +35,7 @@ The supplied assessment screenshot establishes the Caseload entry point. Educato
 ### Step 1: Select Student from Caseload
 - **Observed Screen**: Caseload table listing assigned students with visible columns for *Full Name*, *Last Name*, *IEP Due*, *Eval Due*, *Collaborators*, *Service Time*, *School*, and row *Actions*.
 - **Observed Action**: The educator locates the student row and clicks the `Take Data` button in the Actions column.
-- **Observed Result**: The application transitions directly into the active data-collection workspace for that selected student.
+- **Observed Result**: The entry action triggers the data-collection surface for the selected student.
 
 ### Step 2: Goal and Measurement Surface
 - **Observed Screen**: Active data-collection view displaying the student's active IEP goals, baseline targets, and interactive recording controls.

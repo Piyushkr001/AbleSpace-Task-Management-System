@@ -179,6 +179,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                 type="button"
                 variant="ghost"
                 size="sm"
+                disabled={isBusy}
                 onClick={() => setIsCreating(true)}
                 className="w-full h-7 rounded-lg text-xs font-medium justify-start text-primary hover:text-primary hover:bg-primary/10 px-2"
               >
@@ -193,6 +194,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                     value={newLabelName}
                     onChange={(e) => setNewLabelName(e.target.value)}
                     maxLength={50}
+                    disabled={isBusy}
                     autoFocus
                     className="h-7 text-xs rounded-lg px-2"
                     required
@@ -206,10 +208,12 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                       key={c.value}
                       type="button"
                       title={c.name}
+                      disabled={isBusy}
                       onClick={() => setNewLabelColor(c.value)}
                       className={cn(
                         "size-4 rounded-full flex items-center justify-center transition-transform",
-                        newLabelColor === c.value && "ring-2 ring-primary ring-offset-1 scale-110"
+                        newLabelColor === c.value && "ring-2 ring-primary ring-offset-1 scale-110",
+                        isBusy && "opacity-50 cursor-not-allowed"
                       )}
                       style={{ backgroundColor: c.value }}
                     >
@@ -225,6 +229,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                     type="button"
                     variant="outline"
                     size="sm"
+                    disabled={isBusy}
                     onClick={() => {
                       setIsCreating(false);
                       setNewLabelName("");
@@ -236,7 +241,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                   <Button
                     type="submit"
                     size="sm"
-                    disabled={!newLabelName.trim() || createLabelMutation.isPending}
+                    disabled={!newLabelName.trim() || isBusy}
                     className="h-6 text-[10px] rounded-md px-2 flex-1"
                   >
                     {createLabelMutation.isPending ? "Creating..." : "Save"}

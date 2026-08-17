@@ -284,8 +284,8 @@ bun test
 
 ## 🎨 Theme Support & Responsive Design
 
-- **Persistent Theming**: Full Light, Dark, and System mode support stored in `localStorage` without layout shifts or flashing.
-- **Responsive Layout**: Tested across mobile (375px–430px), tablet (768px–1024px), and desktop (1280px–1920px) viewports with horizontal Kanban board scrolling and responsive modal dialogs.
+- **Persistent Theming**: Full Light, Dark, and System mode support with theme initialization configured to minimize incorrect-theme flashing during hydration.
+- **Responsive Layout**: The interface is designed responsively for mobile, tablet, and desktop layouts with horizontal Kanban board scrolling and adaptive modal dialogs.
 
 ---
 
