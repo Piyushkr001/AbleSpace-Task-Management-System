@@ -31,8 +31,10 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
 
   const currentLabelIds = task.labels.map((l) => l.id);
 
+  const isBusy = updateTaskMutation.isPending || createLabelMutation.isPending;
+
   const toggleLabel = (labelId: string) => {
-    if (updateTaskMutation.isPending || createLabelMutation.isPending) return;
+    if (isBusy) return;
 
     const currentIds = task.labels.map((l) => l.id);
     const nextLabelIds = currentIds.includes(labelId)
@@ -46,7 +48,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
   };
 
   const handleClearAll = () => {
-    if (updateTaskMutation.isPending || createLabelMutation.isPending) return;
+    if (isBusy) return;
 
     updateTaskMutation.mutate({
       id: task.id,
@@ -57,7 +59,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
   const handleCreateLabel = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanName = newLabelName.trim();
-    if (!cleanName) return;
+    if (!cleanName || isBusy) return;
 
     createLabelMutation.mutate(
       {
@@ -89,7 +91,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
             <Button
               variant="ghost"
               size="sm"
-              disabled={updateTaskMutation.isPending}
+              disabled={isBusy}
               className="h-8 border-none bg-transparent hover:bg-accent/50 rounded-xl px-2 text-xs font-medium w-auto"
             />
           }
@@ -117,7 +119,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleClearAll}
-                  disabled={updateTaskMutation.isPending}
+                  disabled={isBusy}
                   className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
                 >
                   <X className="size-3 mr-1" />
@@ -149,7 +151,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
                     <div className="flex items-center gap-2 truncate">
                       <Checkbox
                         checked={isChecked}
-                        disabled={updateTaskMutation.isPending}
+                        disabled={isBusy}
                         onCheckedChange={() => toggleLabel(l.id)}
                       />
                       <span className="truncate text-xs">{l.name}</span>

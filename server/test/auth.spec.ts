@@ -62,6 +62,9 @@ describe("AuthService", () => {
         if (token === "valid-guest-token") {
           return { sub: "existing-guest-123", type: "guest" };
         }
+        if (token === "non-guest-token") {
+          return { sub: "existing-guest-123", type: "user" };
+        }
         throw new Error("Invalid token");
       }),
     };
@@ -111,6 +114,21 @@ describe("AuthService", () => {
     expect(result.data.user.id).toBe("existing-guest-123");
     expect(result.data.user.isGuest).toBe(true);
     expect(mockUsersService.createGuestUserTx).not.toHaveBeenCalled();
+  });
+
+  it("should not reuse token if token type is not guest and create new session", async () => {
+    const cookiesSet: Record<string, unknown> = {};
+    const mockRes = {
+      cookie: (name: string, val: string, options: unknown) => {
+        cookiesSet[name] = { val, options };
+      },
+    } as any;
+
+    const result = await authService.createGuestSession(mockRes, "non-guest-token");
+
+    expect(result.data.user.id).toBe("guest-user-123");
+    expect(result.data.user.isGuest).toBe(true);
+    expect(mockUsersService.createGuestUserTx).toHaveBeenCalled();
   });
 
   it("should return the current user profile if user exists", async () => {
