@@ -32,11 +32,12 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
   const currentLabelIds = task.labels.map((l) => l.id);
 
   const toggleLabel = (labelId: string) => {
-    if (updateTaskMutation.isPending) return;
+    if (updateTaskMutation.isPending || createLabelMutation.isPending) return;
 
-    const nextLabelIds = currentLabelIds.includes(labelId)
-      ? currentLabelIds.filter((id) => id !== labelId)
-      : [...currentLabelIds, labelId];
+    const currentIds = task.labels.map((l) => l.id);
+    const nextLabelIds = currentIds.includes(labelId)
+      ? currentIds.filter((id) => id !== labelId)
+      : [...currentIds, labelId];
 
     updateTaskMutation.mutate({
       id: task.id,
@@ -45,7 +46,7 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
   };
 
   const handleClearAll = () => {
-    if (updateTaskMutation.isPending) return;
+    if (updateTaskMutation.isPending || createLabelMutation.isPending) return;
 
     updateTaskMutation.mutate({
       id: task.id,
@@ -66,9 +67,10 @@ export function TaskLabelsField({ task }: TaskLabelsFieldProps) {
       {
         onSuccess: (newLabel) => {
           // Immediately attach newly created label to current task
+          const currentIds = task.labels.map((l) => l.id);
           updateTaskMutation.mutate({
             id: task.id,
-            payload: { labelIds: [...currentLabelIds, newLabel.id] },
+            payload: { labelIds: [...currentIds, newLabel.id] },
           });
           setNewLabelName("");
           setIsCreating(false);

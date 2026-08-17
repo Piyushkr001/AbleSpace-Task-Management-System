@@ -2,7 +2,7 @@
 
 ## 1. Objective
 
-This document provides a product and user experience breakdown of the core **"Take Data"** data-collection workflow within **AbleSpace**. The purpose of this analysis is to evaluate the verified workflow that special education professionals and service providers utilize to track student IEP goals, identify observed friction points, and provide clearly separated, actionable UX/UI and functional enhancement proposals.
+This document provides a product and user experience breakdown of the core **"Take Data"** data-collection workflow within **AbleSpace**. The purpose of this analysis is to evaluate the verified workflow that special education professionals and service providers utilize to track student IEP goals, identify potential workflow friction points, and provide clearly separated, actionable UX/UI and functional enhancement proposals.
 
 ---
 
@@ -22,7 +22,7 @@ Click "Take Data" action directly within the student table row
 [MANUAL ACTION REQUIRED — INSERT ACTUAL ABLESPACE SCREENSHOT: Caseload table showing Take Data action]
 ```
 
-Educators do not need to navigate through auxiliary profile pages to initiate goal tracking; the primary entry point is positioned directly within the student row in the Caseload table.
+The supplied assessment screenshot establishes the Caseload entry point. Educators do not need to navigate through auxiliary profile pages to initiate goal tracking; the primary entry point is positioned directly within the student row in the Caseload table.
 
 ---
 
@@ -55,7 +55,7 @@ Educators do not need to navigate through auxiliary profile pages to initiate go
 
 ## 4. Information Architecture
 
-Based on verified AbleSpace screens, the information architecture presents:
+The supplied assessment screenshot establishes the Caseload entry point. Based on this entry view and observed data collection surfaces, the information architecture presents:
 
 1. **Caseload Table Context**: Student demographic and compliance metadata (*Full Name*, *Last Name*, *IEP Due*, *Eval Due*, *Collaborators*, *Service Time*, *School*).
 2. **Student Session Context**: Student name and relevant caseload indicators ensuring the clinician maintains orientation during fast-paced classroom or therapy sessions.
@@ -73,11 +73,11 @@ Based on verified AbleSpace screens, the information architecture presents:
 
 ---
 
-## 6. Friction Points
+## 6. Potential Workflow Friction
 
-1. **Multi-Student Context Switching**: Special education teachers and speech/occupational therapists often manage small groups (2–4 students simultaneously). Switching back to the main caseload table to open a second student creates navigation latency.
-2. **High-Speed Input Precision**: In self-contained classroom environments, educators must record rapid student responses while maintaining continuous eye contact and physical supervision. Small touch targets or ambiguous tap confirmations increase the risk of input errors.
-3. **Accidental Double-Taps & Mis-taps**: Fast repeated inputs can register unintentional duplicate submissions without a brief, non-blocking undo mechanism.
+1. **Multi-Student Context Switching**: If clinicians frequently collect data for multiple students in small group interventions (e.g. 2–4 students simultaneously), navigating back to the main caseload table between students can introduce repeated navigation transitions.
+2. **High-Speed Input Precision**: In fast-paced classroom environments where educators maintain continuous student supervision, compact interactive touch targets on mobile/tablet devices could increase the risk of mis-taps.
+3. **Rapid Repeated Inputs**: Fast successive inputs can risk duplicate registrations without immediate visual confirmation and a non-blocking undo mechanism.
 
 ---
 
@@ -121,4 +121,4 @@ Based on verified AbleSpace screens, the information architecture presents:
 
 ## 11. Conclusion
 
-AbleSpace's `Take Data` workflow succeeds by offering direct, low-barrier entry straight from the Caseload table. By augmenting this foundation with group tracking modes, enlarged peripheral-friendly touch targets, input debouncing, and offline resilience, the data collection experience can further reduce clinician cognitive overhead and maximize student instructional time.
+AbleSpace's `Take Data` workflow succeeds by offering direct, low-barrier entry straight from the Caseload table. By augmenting this foundation with group tracking modes, enlarged peripheral-friendly touch targets, immediate input confirmation, event safeguards, and offline resilience, the data collection experience can further reduce clinician cognitive overhead and maximize student instructional time.
