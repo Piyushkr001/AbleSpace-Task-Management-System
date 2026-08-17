@@ -35,6 +35,14 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
     );
   }
 
+  const jwtSecret = config.JWT_SECRET as string;
+  const nodeEnv = (config.NODE_ENV as string) || "development";
+  if (nodeEnv === "production" && jwtSecret.length < 32) {
+    throw new Error(
+      `[Config Error] JWT_SECRET must be at least 32 characters long in production environments.`
+    );
+  }
+
   return {
     PORT: Number(config.PORT) || 5001,
     NODE_ENV: (config.NODE_ENV as string) || "development",

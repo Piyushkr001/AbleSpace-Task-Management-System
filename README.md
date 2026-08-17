@@ -6,7 +6,7 @@ A full-stack task management application built with production-oriented architec
 
 ## 🚀 Overview
 
-Taskora provides teams and educators with an intuitive, responsive workspace to manage tasks, plan projects, track statuses through Kanban Board and List views, organize tasks with custom colored labels, manage subtask hierarchies, and collaborate efficiently.
+Taskora provides workspace-scoped task and project management with support for structured task membership, planning projects, tracking statuses through Kanban Board and List views, organizing tasks with custom colored labels, and managing subtask hierarchies.
 
 ### Key Capabilities
 - **Dual Authentication**: Instant passwordless **Guest Login** (with automatic session reuse and secure HttpOnly cookie persistence) alongside **Clerk Google OAuth**.
@@ -317,6 +317,7 @@ The implementation follows the supplied navigation structure, Kanban column stat
 
 - **Board Column Ordering**: Tasks in Kanban board columns are ordered by creation timestamp; manual drag-and-drop ordering is not implemented as it was not required in the verified design.
 - **Single Active Workspace**: Taskora currently provisions and operates on one workspace per authenticated principal; UI workspace switching is not exposed.
+- **Workspace Invitations**: Workspace invitation and member-management workflows are not exposed in the current assessment UI.
 - **Label Editing**: Labels are created inline and assigned/removed from tasks; full label color/name updating is exposed via API but not in a dedicated standalone settings page.
 
 ---
