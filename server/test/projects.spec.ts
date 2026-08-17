@@ -89,6 +89,21 @@ describe("ProjectsService", () => {
     const res = await projectsService.findAll(mockUserId);
     expect(res.data.projects.length).toBe(1);
     expect(res.data.projects[0].taskCount).toBe(5);
+    expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
+      where: { workspaceId: mockWorkspaceId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: {
+            tasks: {
+              where: {
+                parentTaskId: null,
+              },
+            },
+          },
+        },
+      },
+    });
   });
 
   it("should reject project lookup for foreign workspace", async () => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { X } from "lucide-react";
+import { useState } from "react";
+import { X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Task } from "../../types/task.types";
@@ -10,46 +11,79 @@ interface TaskDatesFieldProps {
   task: Task;
 }
 
-export function TaskDatesField({ task }: TaskDatesFieldProps) {
+function TaskDatesFieldForm({ task }: TaskDatesFieldProps) {
+  const [startDate, setStartDate] = useState(task.startDate || "");
+  const [dueDate, setDueDate] = useState(task.dueDate || "");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const updateTaskMutation = useUpdateTask();
 
-  const handleStartDateChange = (val: string) => {
-    const newStartDate = val ? val : null;
-    if (newStartDate === task.startDate) return;
+  const hasChanged =
+    (startDate || null) !== (task.startDate || null) ||
+    (dueDate || null) !== (task.dueDate || null);
 
-    updateTaskMutation.mutate({
-      id: task.id,
-      payload: { startDate: newStartDate },
-    });
+  const handleSave = () => {
+    const s = startDate || null;
+    const d = dueDate || null;
+
+    if (s && d && new Date(s) > new Date(d)) {
+      setErrorMessage("Start date cannot be after due date");
+      return;
+    }
+    setErrorMessage(null);
+
+    updateTaskMutation.mutate(
+      {
+        id: task.id,
+        payload: {
+          startDate: s,
+          dueDate: d,
+        },
+      },
+      {
+        onError: (err) => {
+          setErrorMessage(err.message || "Failed to update dates");
+        },
+      }
+    );
   };
 
-  const handleDueDateChange = (val: string) => {
-    const newDueDate = val ? val : null;
-    if (newDueDate === task.dueDate) return;
+  const handleCancel = () => {
+    setStartDate(task.startDate || "");
+    setDueDate(task.dueDate || "");
+    setErrorMessage(null);
+  };
 
-    updateTaskMutation.mutate({
-      id: task.id,
-      payload: { dueDate: newDueDate },
-    });
+  const handleClearStart = () => {
+    setStartDate("");
+    setErrorMessage(null);
+  };
+
+  const handleClearDue = () => {
+    setDueDate("");
+    setErrorMessage(null);
   };
 
   return (
-    <div className="space-y-1.5 py-1.5 border-b border-border/40">
+    <div className="space-y-2 py-1.5 border-b border-border/40">
       {/* Start Date */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-muted-foreground">Start Date</span>
         <div className="flex items-center gap-1">
           <Input
             type="date"
-            value={task.startDate || ""}
-            onChange={(e) => handleStartDateChange(e.target.value)}
+            value={startDate}
+            onChange={(e) => {
+              setStartDate(e.target.value);
+              setErrorMessage(null);
+            }}
             className="h-7 text-xs rounded-lg px-2 border-none bg-transparent hover:bg-accent/50 w-32"
           />
-          {task.startDate && (
+          {startDate && (
             <Button
+              type="button"
               variant="ghost"
               size="icon"
-              onClick={() => handleStartDateChange("")}
+              onClick={handleClearStart}
               className="size-6 rounded-md text-muted-foreground hover:text-destructive"
               aria-label="Clear start date"
             >
@@ -65,15 +99,19 @@ export function TaskDatesField({ task }: TaskDatesFieldProps) {
         <div className="flex items-center gap-1">
           <Input
             type="date"
-            value={task.dueDate || ""}
-            onChange={(e) => handleDueDateChange(e.target.value)}
+            value={dueDate}
+            onChange={(e) => {
+              setDueDate(e.target.value);
+              setErrorMessage(null);
+            }}
             className="h-7 text-xs rounded-lg px-2 border-none bg-transparent hover:bg-accent/50 w-32"
           />
-          {task.dueDate && (
+          {dueDate && (
             <Button
+              type="button"
               variant="ghost"
               size="icon"
-              onClick={() => handleDueDateChange("")}
+              onClick={handleClearDue}
               className="size-6 rounded-md text-muted-foreground hover:text-destructive"
               aria-label="Clear due date"
             >
@@ -82,6 +120,48 @@ export function TaskDatesField({ task }: TaskDatesFieldProps) {
           )}
         </div>
       </div>
+
+      {/* Error message */}
+      {errorMessage && (
+        <p className="text-[11px] text-destructive leading-tight px-0.5">
+          {errorMessage}
+        </p>
+      )}
+
+      {/* Action buttons when modified */}
+      {hasChanged && (
+        <div className="flex items-center justify-end gap-1.5 pt-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            disabled={updateTaskMutation.isPending}
+            className="h-6 px-2 text-[11px] rounded-md text-muted-foreground"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleSave}
+            disabled={updateTaskMutation.isPending}
+            className="h-6 px-2.5 text-[11px] rounded-md font-medium"
+          >
+            <Check className="size-3 mr-1" />
+            {updateTaskMutation.isPending ? "Saving..." : "Save Dates"}
+          </Button>
+        </div>
+      )}
     </div>
+  );
+}
+
+export function TaskDatesField({ task }: TaskDatesFieldProps) {
+  return (
+    <TaskDatesFieldForm
+      key={`${task.id}-${task.startDate || ""}-${task.dueDate || ""}`}
+      task={task}
+    />
   );
 }

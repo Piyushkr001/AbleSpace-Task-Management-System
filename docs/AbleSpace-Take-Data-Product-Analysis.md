@@ -102,7 +102,7 @@ Based on verified AbleSpace screens, the information architecture presents:
 
 ## 9. Proposed Functional Improvements
 
-- **Configurable Debounce Window**: Introduce a configurable 200–300ms software debounce on high-frequency increment buttons to eliminate accidental double triggers.
+- **Immediate Input Confirmation & Safeguards**: Provide instant visual confirmations and event safeguards alongside transient undo options rather than global input throttling, ensuring legitimate rapid trial sequences are recorded reliably.
 - **Offline Entry & Local Sync**: Support seamless offline recording via local browser storage (IndexedDB) with automatic background synchronization when internet connectivity is re-established in low-signal school areas.
 - **Session Notes & Context Tags**: Provide lightweight quick-tag selectors (e.g. *"High Fatigue"*, *"Assisted by Aide"*, *"Substitute Teacher"*) to enrich quantitative data with qualitative instructional context.
 

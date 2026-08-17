@@ -11,9 +11,9 @@ Taskora provides workspace-scoped task and project management with support for s
 ### Key Capabilities
 - **Dual Authentication**: Instant passwordless **Guest Login** (with automatic session reuse and secure HttpOnly cookie persistence) alongside **Clerk Google OAuth**.
 - **Interactive Kanban Board & List Views**: Task tracking across 5 core statuses (`Backlog`, `To Do`, `In Progress`, `Completed`, `On Hold`).
-- **Project Workspaces**: Full project lifecycle management, task assignments, and live task count metrics.
+- **Project Workspaces**: Full project lifecycle management, task assignments, and current top-level task count metrics.
 - **Dynamic Colored Labels**: Workspace-isolated labels with custom 6-character hex color swatches and instant inline creation.
-- **Hierarchical Subtasks & Relationships**: Circular dependency prevention, self-parenting guards, and relational cascading.
+- **Hierarchical Subtasks & Relationships**: Circular dependency prevention, self-parenting guards, and safe referential delete behavior.
 - **Advanced Filtering & Search**: Instant debounced search combined with task filtering by status, priority, assignee and label, alongside dedicated project-scoped task views.
 - **Workspace-Scoped Data Access**: Backend resource operations are scoped to the authenticated workspace to prevent direct cross-workspace resource access through supported APIs.
 - **Theme Persistence**: Theme initialization is configured to minimize incorrect-theme flashing during hydration across Light, Dark, and System modes.
@@ -75,7 +75,7 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 - **State & Caching**: TanStack React Query v5 with targeted invalidation
 - **HTTP Client**: Centralized Axios API client with normalized API error handling
 - **Theming**: `next-themes` (Dark / Light / System)
-- **Icons**: Lucide React + Phosphor Icons (`@phosphor-icons/react`)
+- **Icons**: Lucide React icons
 
 ### Backend (`/server`)
 - **Framework**: NestJS 11

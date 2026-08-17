@@ -31,8 +31,6 @@ export function useCreateLabel() {
     },
     onSuccess: (label) => {
       queryClient.invalidateQueries({ queryKey: ["labels"] });
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["task"] });
       toast.success(`Label "${label.name}" created successfully`);
     },
     onError: (error: Error) => {

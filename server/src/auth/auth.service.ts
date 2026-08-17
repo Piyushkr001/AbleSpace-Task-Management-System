@@ -29,7 +29,7 @@ export class AuthService {
           type?: string;
         }>(existingToken);
 
-        if (decoded?.sub) {
+        if (decoded?.type === "guest" && decoded?.sub) {
           const existingUser = await this.usersService.findById(decoded.sub);
           if (existingUser && existingUser.isGuest) {
             return {
