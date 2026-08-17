@@ -70,7 +70,7 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 
 ### Frontend (`/client`)
 - **Framework**: Next.js 16.3 (App Router with Turbopack)
-- **Language**: TypeScript 5.7
+- **Language**: TypeScript 5.x
 - **Styling**: Tailwind CSS + Shadcn UI primitives
 - **State & Caching**: TanStack React Query v5 with targeted invalidation
 - **HTTP Client**: Centralized Axios API client with normalized API error handling
@@ -79,7 +79,7 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 
 ### Backend (`/server`)
 - **Framework**: NestJS 11
-- **Language**: TypeScript 5.7
+- **Language**: TypeScript 5.x
 - **Database & ORM**: PostgreSQL + Prisma ORM 6
 - **Security & Rate Limiting**: `@nestjs/throttler`, `@nestjs/jwt`, `cookie-parser`
 - **Validation**: `class-validator` + `class-transformer`
@@ -202,8 +202,8 @@ NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL="/tasks"
 ## 🛠️ Local Development Setup
 
 ### Prerequisites
-- [Bun](https://bun.sh) (v1.1+) or Node.js (v20+)
-- PostgreSQL database instance (local or hosted, e.g. Neon / Supabase)
+- **Runtime**: [Bun](https://bun.sh) (v1.x) is recommended/required for the documented installation and test workflow. Node.js (v20+) may be used for compatible production runtime environments.
+- **Database**: PostgreSQL database instance (local or hosted, e.g. Neon / Supabase)
 
 ### 1. Backend Setup (`/server`)
 
@@ -270,10 +270,10 @@ Visit **`http://localhost:3000`** in your browser.
 ## 🧪 Running Tests
 
 The backend includes focused backend service unit tests covering:
-- **Authentication**: Guest session creation, token reuse, profile retrieval, unauthorized guards.
-- **Task Management**: Workspace scoping, date validity (`startDate <= dueDate`), parent multi-hop cycle prevention, self-parenting guards, and relational clearing (`projectId: null`).
-- **Projects**: Workspace-scoped CRUD, task count aggregations, cascade detachment.
-- **Labels**: Unique label constraints, alphabetical sorting, 6-character hex color format validation.
+- **Authentication**: Guest session creation/reuse, user lookup, Clerk synchronization, and logout behavior.
+- **Tasks**: Task domain rules, relationship validation, date rules (`startDate <= dueDate`), parent cycle prevention, and update behavior.
+- **Projects**: Workspace-scoped Project service CRUD and top-level task counts.
+- **Labels**: Creation, duplicate handling, update/delete, and workspace isolation.
 
 ```bash
 cd server

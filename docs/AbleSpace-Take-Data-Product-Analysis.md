@@ -1,8 +1,8 @@
-# AbleSpace Take Data – Product Understanding Analysis
+# AbleSpace Take Data — Product Understanding
 
 ## 1. Objective
 
-This document provides a rigorous product and user experience breakdown of the core **"Take Data"** data-collection interaction within **AbleSpace**. The purpose of this analysis is to evaluate the verified workflow special education professionals and service providers utilize to track student IEP goals, identify observed friction points, and provide clearly separated, actionable UX/UI and functional enhancement proposals.
+This document provides a product and user experience breakdown of the core **"Take Data"** data-collection workflow within **AbleSpace**. The purpose of this analysis is to evaluate the verified workflow that special education professionals and service providers utilize to track student IEP goals, identify observed friction points, and provide clearly separated, actionable UX/UI and functional enhancement proposals.
 
 ---
 
@@ -13,13 +13,13 @@ In the AbleSpace application interface, data collection begins directly from the
 ```text
 Caseload
   ↓
-Locate / select student in caseload table
+Locate / select student row in Caseload table
   ↓
 Click "Take Data" action directly within the student table row
 ```
 
 ```text
-[Insert actual screenshot: Caseload with Take Data action]
+[MANUAL ACTION REQUIRED — INSERT ACTUAL ABLESPACE SCREENSHOT: Caseload table showing Take Data action]
 ```
 
 Educators do not need to navigate through auxiliary profile pages to initiate goal tracking; the primary entry point is positioned directly within the student row in the Caseload table.
@@ -29,16 +29,16 @@ Educators do not need to navigate through auxiliary profile pages to initiate go
 ## 3. Observed Workflow
 
 ```text
-[Insert actual screenshot: Take Data screen]
+[MANUAL ACTION REQUIRED — INSERT ACTUAL ABLESPACE SCREENSHOT: Actual Take Data screen]
 ```
 
 ### Step 1: Select Student from Caseload
-- **Observed Screen**: Caseload table listing assigned students with demographic identifiers, grade levels, and quick action controls.
-- **Observed Action**: The educator clicks the `Take Data` button corresponding to a specific student row.
+- **Observed Screen**: Caseload table listing assigned students with visible columns for *Full Name*, *Last Name*, *IEP Due*, *Eval Due*, *Collaborators*, *Service Time*, *School*, and row *Actions*.
+- **Observed Action**: The educator locates the student row and clicks the `Take Data` button in the Actions column.
 - **Observed Result**: The application transitions directly into the active data-collection workspace for that selected student.
 
 ### Step 2: Goal and Measurement Surface
-- **Observed Screen**: Active data-collection view displaying the student's active IEP goals, associated baseline targets, and interactive recording controls.
+- **Observed Screen**: Active data-collection view displaying the student's active IEP goals, baseline targets, and interactive recording controls.
 - **Observed Action**: The educator reviews the target objective and inputs trial observations (e.g. logging successful or unsuccessful attempts).
 - **Observed Result**: The counter/measurement indicator updates immediately to reflect the recorded data points.
 
@@ -48,23 +48,24 @@ Educators do not need to navigate through auxiliary profile pages to initiate go
 - **Observed Result**: Data is saved to the student record, updating cumulative progress tracking.
 
 ```text
-[Insert actual screenshot: next verified workflow step]
+[MANUAL ACTION REQUIRED — INSERT ACTUAL ABLESPACE SCREENSHOT: Next verified workflow state]
 ```
 
 ---
 
 ## 4. Information Architecture
 
-Based on verified AbleSpace screens, the data-collection surface presents:
+Based on verified AbleSpace screens, the information architecture presents:
 
-1. **Student Context**: Student name and relevant caseload indicators ensuring the clinician maintains orientation during fast-paced classroom or therapy sessions.
-2. **Goal Description & Criteria**: Target IEP objectives detailing the measurable behavior, mastery criteria, and active monitoring parameters.
-3. **Primary Entry Controls**: Direct interactive touch/click targets for recording data against active goals.
-4. **Session Progress Indicators**: Immediate visual reflection of current trial counts or data logged during the active session.
+1. **Caseload Table Context**: Student demographic and compliance metadata (*Full Name*, *Last Name*, *IEP Due*, *Eval Due*, *Collaborators*, *Service Time*, *School*).
+2. **Student Session Context**: Student name and relevant caseload indicators ensuring the clinician maintains orientation during fast-paced classroom or therapy sessions.
+3. **Goal Description & Criteria**: Target IEP objectives detailing the measurable behavior, mastery criteria, and active monitoring parameters.
+4. **Primary Entry Controls**: Direct interactive touch/click targets for recording data against active goals.
+5. **Session Progress Indicators**: Immediate visual reflection of current trial counts or data logged during the active session.
 
 ---
 
-## 5. Positive UX Observations
+## 5. What Works Well
 
 - **Direct Table-Row Access**: Placing the `Take Data` button directly inside the Caseload table eliminates unnecessary navigation hops, allowing clinicians to begin logging within two clicks.
 - **Dedicated Student Focus**: When tracking a session, visual distraction is minimized by centering the interface on the specific student's objectives.
@@ -111,10 +112,10 @@ Based on verified AbleSpace screens, the data-collection surface presents:
 
 | Recommendation | Target Role | Expected Benefit |
 |---|---|---|
-| **Group Session Mode** | Speech & Occupational Therapists | Reduces the number of navigation transitions required during concurrent group therapy. |
-| **Enlarged Touch Targets** | Resource Teachers & Paraprofessionals | Minimizes mis-taps and allows uninterrupted eye contact with students. |
-| **Instant Undo Snackbar** | All Special Educators | Prevents skewed IEP progress metrics caused by accidental double taps. |
-| **Offline Resilience** | Itinerant Service Providers | Reduces the risk of losing uncommitted observations across mobile therapy rooms or low-Wi-Fi facilities. |
+| **Group Session Mode** | Speech & Occupational Therapists | Could reduce the number of navigation transitions required during concurrent group therapy. |
+| **Enlarged Touch Targets** | Resource Teachers & Paraprofessionals | Could minimize mis-taps and allow uninterrupted eye contact with students. |
+| **Instant Undo Snackbar** | All Special Educators | Could prevent skewed IEP progress metrics caused by accidental double taps. |
+| **Offline Resilience** | Itinerant Service Providers | Could reduce the risk of losing uncommitted observations across mobile therapy rooms or low-Wi-Fi facilities. |
 
 ---
 
