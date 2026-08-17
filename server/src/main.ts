@@ -12,7 +12,11 @@ async function bootstrap() {
   app.setGlobalPrefix("api");
 
   // Configure Cookie Parser
-  app.use(cookieParser());
+  const cookieMiddleware: any =
+    typeof cookieParser === "function"
+      ? cookieParser
+      : (cookieParser as any)?.default || cookieParser;
+  app.use(cookieMiddleware());
 
   // Enable CORS
   const clientUrl = configService.get<string>("CLIENT_URL", "http://localhost:3000");
