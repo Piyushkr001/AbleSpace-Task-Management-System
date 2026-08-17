@@ -2,9 +2,42 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import {
+  FacebookLogoIcon,
+  InstagramLogoIcon,
+  XLogoIcon,
+  LinkedinLogoIcon,
+} from "@phosphor-icons/react";
 
 function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const socialLinks = [
+    {
+      name: "Facebook",
+      href: "https://www.facebook.com/profile.php?id=61562739553445",
+      icon: FacebookLogoIcon,
+      label: "Taskora on Facebook",
+    },
+    {
+      name: "X (Twitter)",
+      href: "https://twitter.com",
+      icon: XLogoIcon,
+      label: "Taskora on X (Twitter)",
+    },
+    {
+      name: "LinkedIn",
+      href: "https://linkedin.com",
+      icon: LinkedinLogoIcon,
+      label: "Taskora on LinkedIn",
+    },
+    {
+      name: "Instagram",
+      href: "https://www.instagram.com/ablespacetech/",
+      icon: InstagramLogoIcon,
+      label: "Taskora on Instagram",
+    },
+  ];
 
   return (
     <footer className="border-t border-border/60 bg-background text-foreground">
@@ -38,6 +71,25 @@ function Footer() {
             <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
               Focused task and project management for modern teams. Organize work, align priorities, and ship faster.
             </p>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-2 pt-1">
+              {socialLinks.map((social) => {
+                const IconComponent = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                  >
+                    <IconComponent size={18} weight="regular" />
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
           {/* Links Columns */}
@@ -101,7 +153,7 @@ function Footer() {
           </div>
         </div>
 
-        {/* Bottom copyright */}
+        {/* Bottom copyright & secondary social links */}
         <div className="mt-12 border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4">
           <p>© {currentYear} Taskora. All rights reserved.</p>
         </div>

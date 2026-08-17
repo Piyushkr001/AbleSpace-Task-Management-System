@@ -75,7 +75,7 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 - **State & Caching**: TanStack React Query v5 with targeted invalidation
 - **HTTP Client**: Centralized Axios API client with normalized API error handling
 - **Theming**: `next-themes` (Dark / Light / System)
-- **Icons**: Lucide React icons
+- **Icons**: Lucide React + Phosphor Icons (`@phosphor-icons/react`)
 
 ### Backend (`/server`)
 - **Framework**: NestJS 11
