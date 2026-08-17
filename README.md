@@ -1,6 +1,6 @@
 # Taskora — AbleSpace Task Management System
 
-A production-ready, full-stack Task Management System engineered for high performance, reliable workspace isolation, responsive interactivity, and clear workflow management. Built as part of the **AbleSpace Full Stack Developer Technical Assessment**.
+A full-stack task management application built with production-oriented architecture, reliable workspace isolation, responsive interactivity, and clear workflow management. Built as part of the **AbleSpace Full Stack Developer Technical Assessment**.
 
 ---
 
@@ -14,27 +14,27 @@ Taskora provides teams and educators with an intuitive, responsive workspace to 
 - **Project Workspaces**: Full project lifecycle management, task assignments, and live task count metrics.
 - **Dynamic Colored Labels**: Workspace-isolated labels with custom 6-character hex color swatches and instant inline creation.
 - **Hierarchical Subtasks & Relationships**: Circular dependency prevention, self-parenting guards, and relational cascading.
-- **Advanced Filtering & Search**: Instant debounced search combined with multi-criteria status, priority, assignee, label, and project filtering.
+- **Advanced Filtering & Search**: Instant debounced search combined with task filtering by status, priority, assignee and label, alongside dedicated project-scoped task views.
 - **Workspace-Scoped Data Access**: Backend resource operations are scoped to the authenticated workspace to prevent direct cross-workspace resource access through supported APIs.
-- **Theme Persistence**: Complete Light / Dark / System theme support with zero theme flashing.
+- **Theme Persistence**: Theme initialization is configured to minimize incorrect-theme flashing during hydration across Light, Dark, and System modes.
 - **Rate-Limiting & Security**: Throttled public endpoints, DTO validation with strict transformation/whitelisting, and sanitized API responses.
 
 ---
 
 ## 🌐 Live Demo & Deployment
 
-- **Live Application Frontend**: `https://your-production-app.vercel.app` *(Replace with deployed URL)*
-- **Live Backend API**: `https://your-production-api.onrender.com/api` *(Replace with deployed URL)*
+- **Live Application Frontend**: `https://your-production-app.vercel.app` *(Manual Action: Replace with deployed frontend URL)*
+- **Live Backend API**: `https://your-production-api.onrender.com/api` *(Manual Action: Replace with deployed backend API URL)*
 
 ---
 
 ## 📸 Screenshots
 
 ```text
-[Insert Screenshot – Kanban Board View with Backlog and Columns]
-[Insert Screenshot – Task List View with Filters]
-[Insert Screenshot – Task Detail View with Subtasks and Labels]
-[Insert Screenshot – Projects Overview and Detail View]
+[Insert actual screenshot – Kanban Board View with Backlog and Columns]
+[Insert actual screenshot – Task List View with Filters]
+[Insert actual screenshot – Task Detail View with Subtasks and Labels]
+[Insert actual screenshot – Projects Overview and Detail View]
 ```
 
 ---
@@ -46,7 +46,7 @@ Taskora provides teams and educators with an intuitive, responsive workspace to 
 │                   Next.js 16 (App Router)              │
 │       Tailwind CSS + Shadcn UI + TanStack Query v5     │
 └───────────────────────────┬────────────────────────────┘
-                            │ (REST API via Axios / Fetch)
+                            │ (REST API via Axios)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │                      NestJS 11                         │
@@ -73,9 +73,9 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 - **Language**: TypeScript 5.7
 - **Styling**: Tailwind CSS + Shadcn UI primitives
 - **State & Caching**: TanStack React Query v5 with targeted invalidation
-- **HTTP Client**: Axios with unified error interceptors
+- **HTTP Client**: Centralized Axios API client with normalized API error handling
 - **Theming**: `next-themes` (Dark / Light / System)
-- **Icons**: Lucide React + Phosphor Icons
+- **Icons**: Lucide React icons
 
 ### Backend (`/server`)
 - **Framework**: NestJS 11
@@ -145,7 +145,7 @@ Taskora provisions and operates on **one workspace per authenticated principal**
 | `POST` | `/api/auth/guest` | Create or reuse guest session (Rate-limited) | Public |
 | `POST` | `/api/auth/sync` | Sync Clerk user with PostgreSQL database | Clerk Bearer |
 | `GET` | `/api/auth/me` | Retrieve authenticated user profile | Guest / Clerk |
-| `POST` | `/api/auth/logout` | Clear guest session cookie | Guest / Clerk |
+| `POST` | `/api/auth/logout` | Clear guest session cookie | Public |
 | `GET` | `/api/tasks` | List top-level tasks (`parentTaskId = null` by default; pass `?parentTaskId=<id>` for subtasks; supports search & filters) | Required |
 | `POST` | `/api/tasks` | Create a new task | Required |
 | `GET` | `/api/tasks/:id` | Get task details by ID | Required |
